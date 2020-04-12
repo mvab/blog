@@ -6,7 +6,7 @@ menu:
   main:
     weight: 111
 noauthor: true
-share: false
+share: true
 title: About me
 type: page
 ---

@@ -1,4 +1,4 @@
-baseurl         = "/"
+baseurl         = "https://marinavab.netlify.com/"
 theme = "hugo-casper-two"
 languageCode    = "en-US"
 disqusShortname = ""
@@ -11,30 +11,29 @@ canonifyurls    = true
   subtitle    = "Marina's blog, attempt #5"
   copyright   = "© 2020"
 
-  cover       = "img/blog-cover.jpg"
+  cover       = "img/ivette-pena-cover.jpg"
   description = "A website built through Hugo and blogdown."
   metaDescription = ""
   googleAnalytics = ""
   customCSS = []
   RSSLink = ""
 
-  twitterName = "faketryghost"
-  fbName = "fakeghost"
-  githubName = "eueung"
-  linkedinName = "eueung"
+  twitterName = "marina_vab"
+  githubName = "mvab"
+  linkedinName = "marina-vabistsevits-82590443"
   mediumName = ""
 
-  logo = "hugo-logo.png"
-  orgName = "EM"
-  orgWebsite = "https://www.telematika.org"
+  logo = "marina-logo.png"
+  orgName = "Marina Vabistsevits"
+  orgWebsite = "https://marinavab.netlify.com"
   orgDescription = "Here is a description placeholder for your org"
 
   showSupport = true
 
-  author = "EM"
-  authorAvatar = "img/ghost-icon.png"
-  authorLocation = "Bandung, ID"
-  authorWebsite = "https://eueung.github.io"
+  author = "Marina Vabistsevits"
+  authorAvatar = "img/marina-logo.png"
+  authorLocation = "Bristol, UK"
+  authorWebsite = "https://marinavab.netlify.com"
   authorDescription = "Your description here"
 
   pageNotFoundTitle = "404 - Page not found"
@@ -48,21 +47,26 @@ canonifyurls    = true
 [[menu.main]]
   name = "Home"
   url = "/"
-  weight = 200
+  weight = 10
+  
+[[menu.main]]
+  name = "About me"
+  url = "/about/"
+  weight = 9  
 
 [[menu.main]]
-  name = "Go"
-  url = "/tags/golang/"
-  weight = 100
-
-[[menu.main]]
-  name = "Categories"
+  name = "Blog"
   url = "/categories/"
-  weight = 99
+  weight = 8
+  
+[[menu.main]]
+  name = "R blogs"
+  url = "/tags/r/"
+  weight = 7
 
 [[menu.main]]
   name = "External"
   url = "https://google.com/"
-  weight = 95
+  weight = 6
 
 

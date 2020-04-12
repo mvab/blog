@@ -10,6 +10,7 @@ categories:
   - personal
 tags:
   - personal
+  - r
 ---
 
 This is my first post about me and about `R`.

@@ -51,6 +51,15 @@ We&amp;rsquo;ll start with creating a new site with a very basic template.</desc
     </item>
     
     <item>
+      <title>my first post</title>
+      <link>/post/my-first-post/</link>
+      <pubDate>Sun, 12 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/my-first-post/</guid>
+      <description>This is my first post about me and about R.</description>
+    </item>
+    
+    <item>
       <title>Hello R Markdown</title>
       <link>/post/hello-r-markdown/</link>
       <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>

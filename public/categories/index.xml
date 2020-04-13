@@ -29,32 +29,5 @@
       <description></description>
     </item>
     
-    <item>
-      <title>Development</title>
-      <link>/categories/development/</link>
-      <pubDate>Mon, 02 Jun 2014 00:00:00 +0000</pubDate>
-      
-      <guid>/categories/development/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>golang</title>
-      <link>/categories/golang/</link>
-      <pubDate>Mon, 02 Jun 2014 00:00:00 +0000</pubDate>
-      
-      <guid>/categories/golang/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>food</title>
-      <link>/categories/food/</link>
-      <pubDate>Sat, 28 Sep 2013 00:00:00 +0000</pubDate>
-      
-      <guid>/categories/food/</guid>
-      <description></description>
-    </item>
-    
   </channel>
 </rss>

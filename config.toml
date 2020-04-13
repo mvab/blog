@@ -24,7 +24,7 @@ canonifyurls    = true
   linkedinName = "marina-vabistsevits-82590443"
   mediumName = ""
 
-  logo = "marina-logo.png"
+  logo = "marina-logo-large.gif" #main page
   orgName = "Marina Vabistsevits"
   orgWebsite = "https://marinavab.netlify.com"
   orgDescription = "Here is a description placeholder for your org"
@@ -32,7 +32,7 @@ canonifyurls    = true
   showSupport = true
 
   author = "Marina Vabistsevits"
-  authorAvatar = "img/marina-logo.png"
+  authorAvatar = "img/marina-logo.png" # on blog posts
   authorLocation = "Bristol, UK"
   authorWebsite = "https://marinavab.netlify.com"
   authorDescription = "Your description here"

@@ -12,4 +12,4 @@ type: page
 ---
 This will be page about me
 
-![](/img/logo.png)
+![](/img/marina-logo-large.gif)

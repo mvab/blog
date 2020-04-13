@@ -9,6 +9,8 @@ canonifyurls    = true
 
 [params]
   sitename = "Marina's blog"
+  pagetitle = "Marina Vabistsevits"
+  faviconfile = "image/favicon.png"
   subtitle    = "Marina Vabistsevits"
   copyright   = "© 2020"
 

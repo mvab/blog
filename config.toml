@@ -1,17 +1,20 @@
 baseurl         = "https://marinavab.netlify.com/"
 theme = "hugo-casper-two"
-languageCode    = "en-US"
+languageCode    = "en-UK"
+title = "Marina's blog"
 disqusShortname = ""
-paginate        = 6
+paginate        = 6   # number of pages 
 #SectionPagesMenu = "main"
 canonifyurls    = true
 
 
 [params]
-  sitename = "Marina's blog"
-  pagetitle = "Marina Vabistsevits"
+
+  title = "Hello"
+  subtitle  = "Marina Vabistsevits's blog"
+  #sitename = "Marina's blog"
   faviconfile = "image/favicon.png"
-  subtitle    = "Marina Vabistsevits"
+  
   copyright   = "© 2020"
 
   cover       = "img/ivette-pena-cover.jpg"
@@ -27,10 +30,10 @@ canonifyurls    = true
   mediumName = ""
 
   logo = "marina-logo-large.gif" #main page
-  orgName = "Marina Vabistsevits"
-  orgWebsite = "https://marinavab.netlify.com"
-  orgDescription = "Here is a description placeholder for your org"
-
+  #orgName = "Marina Vabistsevits"
+  #orgWebsite = "https://marinavab.netlify.com"
+  #orgDescription = "Here is a description placeholder for your org"
+#
   showSupport = true
 
   author = "Marina Vabistsevits"
@@ -45,8 +48,10 @@ canonifyurls    = true
   singleViewStyle = "casper"
 
 [permalinks]
-  post = "/post/:slug/"
+#  post = "/post/:slug/"
+ post = "/:year/:month/:day/:slug/"
 
+  
 [[menu.main]]
   name = "Home"
   url = "/"
@@ -59,13 +64,18 @@ canonifyurls    = true
 
 [[menu.main]]
   name = "Blog"
-  url = "/categories/"
+  url = "/post/"
   weight = 8
+  
+[[menu.main]]
+  name = "Browse by categories"
+  url = "/categories/"
+  weight = 7
   
 [[menu.main]]
   name = "CV"
   url = "/vitae/"
-  weight = 7
+  weight = 6
   
   
 #[[menu.main]]

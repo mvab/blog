@@ -5,9 +5,6 @@ date: '2020-04-12'
 slug: my-first-post
 draft: false
 image: /img/writing.jpg
-categories:
-  - R
-  - personal
 tags:
   - personal
   - r

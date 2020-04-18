@@ -27,7 +27,7 @@ canonifyurls    = true
   twitterName = "marina_vab"
   githubName = "mvab"
   linkedinName = "marina-vabistsevits-82590443"
-  mediumName = ""
+
 
   logo = "marina-logo-large.gif" #main page
   #orgName = "Marina Vabistsevits"
@@ -52,30 +52,34 @@ canonifyurls    = true
  post = "/:year/:month/:day/:slug/"
 
   
-[[menu.main]]
-  name = "Home"
-  url = "/"
-  weight = 9
-  
-[[menu.resources]]
-  name = "About me"
-  url = "/about/"
-  weight = 1  
+#[[menu.main]]
+#  name = "Home"
+#  url = "/"
+#  weight = 9
 
+
+ # really weird - with this commented out, still get a page "about me" 
+#[[menu.main]]
+#  name = "About"
+#  url = "/about/"
+#  weight = 10  
+  
 [[menu.main]]
   name = "Blog"
   url = "/post/"
   weight = 8
   
-[[menu.main]]
-  name = "Browse by categories"
-  url = "/categories/"
-  weight = 7
+
+#  
+#[[menu.main]]
+#  name = "Tags"
+#  url = "/tags/"
+#  weight = 6
   
 [[menu.main]]
   name = "CV"
   url = "/vitae/"
-  weight = 6
+  weight = 5  
   
   
 #[[menu.main]]
@@ -88,4 +92,6 @@ canonifyurls    = true
 #  url = "https://google.com/"
 #  weight = 6
 
+[taxonomies]
+  tag = "tags"
 

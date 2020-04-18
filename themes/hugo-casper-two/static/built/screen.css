@@ -891,7 +891,7 @@ body {
 
 .post-full-title {
   margin: 0;
-  color: #ed95ab;
+  color: #15171a;
 }
 
 .date-divider {
@@ -997,7 +997,7 @@ body {
 }
 
 .post-template .kg-card-markdown>p:first-child {
-  font-size: 1.25em;
+  font-size: 1.05em;
   line-height: 1.5em;
 }
 

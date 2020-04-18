@@ -37,7 +37,7 @@ canonifyurls    = true
   authorAvatar = "img/marina-logo.png" # on blog posts
   authorLocation = "Bristol, UK"
   authorWebsite = "https://marinavab.netlify.com"
-  authorDescription = "Your description here"
+  authorDescription = "The maintainer of this blog"
 
   pageNotFoundTitle = "404 - Page not found"
 

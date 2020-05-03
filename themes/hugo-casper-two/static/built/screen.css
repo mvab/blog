@@ -2192,3 +2192,8 @@ body {
   }
 }
 /*# sourceMappingURL=screen.css.map */
+
+
+img[alt$=">"] {
+  float: right;
+}

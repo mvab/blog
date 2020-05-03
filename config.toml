@@ -30,7 +30,7 @@ canonifyurls    = true
 
 
   logo = "marina-logo-large.gif" #main page
-  #orgName = "Marina Vabistsevits"
+  orgName = "Marina Vabistsevits" # C2020
   #orgWebsite = "https://marinavab.netlify.com"
   #orgDescription = "Here is a description placeholder for your org"
 #

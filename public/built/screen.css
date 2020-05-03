@@ -473,6 +473,7 @@ body {
   z-index: 10;
   margin: 0;
   padding: 0;
+  font-family: Economica,Roboto,Oxygen,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
   font-size: 3.8rem;
   font-weight: 700;
 }

@@ -15,7 +15,7 @@ canonifyurls    = true
   #sitename = "Marina's blog"
   faviconfile = "image/favicon.png"
   
-  copyright   =  © 2020"
+  copyright   =  "©2020"
 
   cover       = "img/ivette-pena-cover.jpg"
   description = "A website built through Hugo and blogdown."

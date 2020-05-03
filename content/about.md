@@ -13,7 +13,7 @@ type: page
 
 Hello, world!
 
-My name is Marina :estonia:, welcome to my blog.
+My name is Marina, welcome to my blog.
 
 I’m a PhD student at the University of Bristol at the MRC Integrative Epidemiology Unit. My work is somewhere at the intersection of Epidemiology and Data Mining, and it’s an exciting time to be in either of those fields.
 

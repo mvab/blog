@@ -11,6 +11,8 @@ title: About me
 type: page
 ---
 
+<img style="float: right;" src="/img/marina-logo-large.gif">
+
 Hello, world!
 
 My name is Marina, welcome to my blog.
@@ -23,6 +25,3 @@ I like good visualisations, tidy workflows, existent documentation, using git, a
 
 In this blog I intend to talk about data visualisations and workflows I create for my projects and share any (hopefully) useful insights into new methods and tricks I discover along the way.
 
-![](/img/marina-logo-large.gif) { width=50% }
-
-<img src="/img/marina-logo-large.gif" width="300">

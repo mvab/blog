@@ -11,7 +11,7 @@ title: About me
 type: page
 ---
 
-Hello, world!
+| Hello, world!
 
 My name is Marina, welcome to my blog.
 
@@ -21,6 +21,4 @@ My background in bioinformatics and direct-to-consumer genetics, and currently I
 
 I like good visualisations, tidy workflows, existent documentation, using git, and reproducible science. And I’m on the journey to get better at all of those things.
 
-In this blog I intend to talk about data visualisations and workflows I create for my projects and share any (hopefully) useful insights into new methods and tricks I discover along the way.
-
-![pic alt >](/img/marina-logo-large.gif)
+In this blog I intend to talk about data visualisations and workflows I create for my projects and share any (hopefully) useful insights into new methods and tricks I discover along the way. | ![pic](/img/marina-logo-large.gif) |

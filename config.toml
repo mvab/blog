@@ -1,4 +1,4 @@
-baseurl         = "https://marinavab.netlify.com/"
+baseurl         = "https://marinalearning.netlify.com/"
 theme = "hugo-casper-two"
 languageCode    = "en-UK"
 title = "Marina's blog"
@@ -31,7 +31,7 @@ canonifyurls    = true
 
   #logo = "marina-logo-large.gif" #main page
   orgName = "Marina Vabistsevits" # C2020
-  #orgWebsite = "https://marinavab.netlify.com"
+  #orgWebsite = "https://marinalearning.netlify.com"
   #orgDescription = "Here is a description placeholder for your org"
 #
   showSupport = true
@@ -39,7 +39,7 @@ canonifyurls    = true
   author = "Marina Vabistsevits"
   authorAvatar = "img/marina-logo.png" # on blog posts
   authorLocation = "Bristol, UK"
-  authorWebsite = "https://marinavab.netlify.com"
+  authorWebsite = "https://marinalearning.netlify.com"
   authorDescription = "The maintainer of this blog"
 
   pageNotFoundTitle = "404 - Page not found"

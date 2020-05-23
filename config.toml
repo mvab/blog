@@ -6,19 +6,26 @@ disqusShortname = ""
 paginate        = 6   # number of pages 
 #SectionPagesMenu = "main"
 canonifyurls    = true
+summaryLength = 30 # post preview lenght
+enableEmoji = true
+googleAnalytics = "UA-167492098-1"
+ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 
 
+# Enable source code highlighting
+# see https://github.com/eueung/hugo-casper-two/issues/20
+#
 [params]
 
-  title = "I like pretty plots"
-  subtitle  = "Marina Vabistsevits's blog"
+  title = "Marina Learning"
+  subtitle  = "data science blog"
   #sitename = "Marina's blog"
-  faviconfile = "image/favicon.png"
+  #faviconfile = "image/favicon.png"
   
   copyright   =  "© 2020"
 
   cover       = "img/ivette-pena-cover.jpg"
-  description = "A website built through Hugo and blogdown."
+  description = "A data science blog by Marina Vabistsevits"
   metaDescription = ""
   googleAnalytics = ""
   customCSS = []
@@ -79,6 +86,7 @@ canonifyurls    = true
 [[menu.main]]
   name = "CV"
   url = "/vitae/"
+  ##url = "/CV_MarinaVabistsevits.pdf"
   weight = 5  
   
   

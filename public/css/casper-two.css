@@ -71,6 +71,7 @@
     }
 }
 
+/* colour of the code in code boxes */
 .post-full-content pre code {
-    color: #e5eff5;
+    color: #15171ab8;   
 }    

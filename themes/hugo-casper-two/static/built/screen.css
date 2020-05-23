@@ -1072,7 +1072,7 @@ body {
 
 .post-full-content code {
   padding: 0 5px 2px;
-  font-size: .8em;
+  font-size: .7em;  /*posts font size*/
   line-height: 1em;
   font-weight: 400!important;
   background: #e5eff5;
@@ -1100,9 +1100,11 @@ body {
   background: transparent;
 }
 
+/* : removed to be able to use external highlighting theme
 .post-full-content pre code * {
   color: inherit;
 }
+*/
 
 .post-full-content .fluid-width-video-wrapper {
   margin: 1.5em 0 3em;

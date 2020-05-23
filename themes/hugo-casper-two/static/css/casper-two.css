@@ -71,7 +71,7 @@
     }
 }
 
-/* colour of the code in code boxes */
+/* colour of the code in code boxes : removed to be able to use external highlighting theme
 .post-full-content pre code {
     color: #15171ab8;   
-}    
+}    */

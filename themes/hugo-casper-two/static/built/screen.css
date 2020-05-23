@@ -902,7 +902,7 @@ body {
 
 .post-full-image {
   margin: 0 -10vw -165px;
-  height: 800px;
+  height: 400px;
   background: #c5d2d9 50%;
   background-size: cover;
   border-radius: 5px;
@@ -1079,16 +1079,17 @@ body {
   border-radius: 3px;
 }
 
+/*code box*/
 .post-full-content pre {
   overflow-x: auto;
   margin: 1.5em 0 3em;
   padding: 20px;
   max-width: 100%;
-  border: 1px solid #000;
+  border: 1px solid #e5eff6;
   color: #e5eff5;
   font-size: 1.4rem;
   line-height: 1.5em;
-  background: #0e0f11;
+  background: #e5eff6;
   border-radius: 5px;
 }
 

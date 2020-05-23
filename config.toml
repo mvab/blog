@@ -47,7 +47,7 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
   authorAvatar = "img/marina-logo.png" # on blog posts
   authorLocation = "Bristol, UK"
   authorWebsite = "https://marinalearning.netlify.com"
-  authorDescription = "The maintainer of this blog"
+  authorDescription = "Doctoral student at the University of Bristol"
 
   pageNotFoundTitle = "404 - Page not found"
 

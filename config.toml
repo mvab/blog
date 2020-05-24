@@ -8,7 +8,6 @@ paginate        = 6   # number of pages
 canonifyurls    = true
 summaryLength = 30 # post preview lenght
 enableEmoji = true
-googleAnalytics = "UA-167492098-1"
 ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 
 
@@ -26,8 +25,8 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 
   cover       = "img/ivette-pena-cover.jpg"
   description = "A data science blog by Marina Vabistsevits"
+  googleAnalytics = "UA-167492098-1"
   metaDescription = ""
-  googleAnalytics = ""
   customCSS = []
   RSSLink = ""
 

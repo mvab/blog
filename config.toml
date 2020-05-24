@@ -2,7 +2,8 @@ baseurl         = "https://marinalearning.netlify.com/"
 theme = "hugo-casper-two"
 languageCode    = "en-UK"
 title = "Marina's blog"
-disqusShortname = ""
+
+disqusShortname = "marinalearning" # to enable comments?
 paginate        = 6   # number of pages 
 #SectionPagesMenu = "main"
 canonifyurls    = true
@@ -10,10 +11,14 @@ summaryLength = 30 # post preview lenght
 enableEmoji = true
 ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 
+# make it searchable
+#enableRobotsTXT = true
+#canonifyURLs = true
 
-# Enable source code highlighting
+
+# To enable source code highlighting
 # see https://github.com/eueung/hugo-casper-two/issues/20
-#
+
 [params]
 
   title = "Marina Learning"
@@ -85,7 +90,7 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 [[menu.main]]
   name = "CV"
   url = "/vitae/"
-  ##url = "/CV_MarinaVabistsevits.pdf"
+  #url = "/cv.pdf" #in static folder
   weight = 5  
   
   

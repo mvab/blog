@@ -3,7 +3,7 @@ theme = "hugo-casper-two"
 languageCode    = "en-UK"
 title = "Marina's blog"
 
-disqusShortname = "marinalearning" # to enable comments?
+disqusShortname = "marinalearning" # to enable comments
 paginate        = 6   # number of pages 
 #SectionPagesMenu = "main"
 canonifyurls    = true
@@ -22,7 +22,7 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 [params]
 
   title = "Marina Learning"
-  subtitle  = "data science blog"
+  subtitle  = "a data science blog"
   #sitename = "Marina's blog"
   #faviconfile = "image/favicon.png"
   

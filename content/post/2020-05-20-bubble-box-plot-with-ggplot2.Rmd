@@ -110,7 +110,7 @@ __Basic boxplot__
 Let's start with simple boxplots by category - 
 
 
-```{r  fig.width=7, fig.height=5}
+```{r}
 ggplot(data = dat, 
        mapping = aes(x = trait_summary, y = r_1, fill = trait_summary)) + 
    geom_boxplot() 

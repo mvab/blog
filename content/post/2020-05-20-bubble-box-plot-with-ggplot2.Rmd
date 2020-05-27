@@ -20,18 +20,6 @@ knitr::opts_chunk$set(echo = TRUE, include=TRUE, message ="", warning=FALSE)
 knitr::opts_chunk$set(collapse = TRUE, out.width = "100%")
 ```
 
-```{r include=FALSE}
-library(dplyr)
-library(readr)
-library(tidyr)
-library(data.table)
-
-library(ggplot2)
-library(wesanderson)
-library(plotly)
-library(colorspace)
-library(cowplot)
-```
 
 ```
 TL;DR 
@@ -69,16 +57,18 @@ We are interested in:
 
 ### Building visualisation
 
-
-```{r include=TRUE, eval=F}
+```{r include=TRUE}
 library(dplyr)
+library(readr)
 library(tidyr)
 library(data.table)
+
 library(ggplot2)
 library(wesanderson)
+#library(plotly)
+library(colorspace)
 library(cowplot)
 ```
-
 
 
 ```{r, echo=F}
@@ -92,8 +82,14 @@ __First look__
 dat <- fread(paste0(data_path, "data.tsv"), 
              select=c("SNPS", "r_1", "pval", "trait_summary") ) %>% 
         filter(!is.na(trait_summary))
+```
+
+```{r}
 # quick look at the data
-dat %>% tail()
+dat %>% head()
+```
+
+```{r}
 # check number of data points per categoty
 dat %>% count(trait_summary) %>% arrange(desc(n))
 ```
@@ -111,7 +107,7 @@ __Basic boxplot__
 Let's start with simple boxplots by category - 
 
 
-```{r}
+```{r, out.width= "80%"}
 ggplot(data = dat, 
        mapping = aes(x = trait_summary, y = r_1, fill = trait_summary)) + 
    geom_boxplot() 
@@ -128,7 +124,7 @@ Firstly, let's get rid of ggplot2's default grey background! I've recently disco
   - add descriptive y-axis label, remove x-axis label, add a title!
 
 
-```{r fig.width=6, fig.height=6}
+```{r fig.width=6, fig.height=6, out.width= "70%"}
 ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)) + 
   geom_boxplot()+
   # cowplot theme
@@ -150,18 +146,18 @@ I'm always on the lookout for new palettes. Recently I've discovered a Wes Ander
 The only drawback of these palettes is that they are all quite small, so for my multi-category plot, I will need to make a frankenstein palette. For my current data, I like the colours in `Darjeeling1` and `Zissou1`
 
 
-```{r fig.width=2, fig.height=1}
+```{r fig.width=2, fig.height=1, out.width= "30%"}
 wes_palette("Darjeeling1")
 ```
 
-```{r fig.width=2, fig.height=1}
+```{r fig.width=2, fig.height=1,  out.width= "30%"}
 wes_palette("Zissou1")
 ```
 
 
 Here is a finished palette for my 17 categories (skipping the steps of manually selecting the colours)
 
-```{r}
+```{r   out.width= "70%"}
 mypal<-c("#78B7C5",  "#EBCC2A", "#FF0000", "#EABE94", 
          "#3B9AB2", "#B40F20", "#0B775E", "#F2300F", 
          "#5BBCD6", "#F98400", "#ab0213", "#E2D200", 
@@ -173,7 +169,7 @@ scales::show_col(mypal)
 ```
 Adding my new palette to the plot - 
 
-```{r fig.width=6, fig.height=6}
+```{r fig.width=6, fig.height=6,  out.width= "70%"}
 ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)) + 
   geom_boxplot()+
   theme_minimal_hgrid(10, rel_small = 1) +
@@ -203,7 +199,7 @@ __Jitter plot__
 
 Next, I want to explore individual data points (SNPs) by adding `geom_jitter` to my plot.
 
-```{r fig.width=6, fig.height=6}
+```{r fig.width=6, fig.height=6, out.width= "70%"}
 ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)) + 
   geom_boxplot()+
   # add individual data points 
@@ -234,7 +230,7 @@ __Bubble plot__
 dat <- filter(dat, trait_summary != "x_Miscellaneous")
 ```
 
-```{r fig.width=7, fig.height=6}
+```{r fig.width=7, fig.height=6, out.width= "80%"}
 ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, colour=trait_summary)) + 
   # modify jitter geom to look like a bubble plot
   geom_jitter(alpha=0.5, size =5, position = position_jitter(width = 0.4))+
@@ -267,7 +263,7 @@ dat <- mutate(dat,
 
 Let's make this plot!
 
-```{r fig.width=7, fig.height=6}
+```{r fig.width=7, fig.height=6, out.width= "85%"}
 ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1,  colour=trait_summary,
                                  # add bubble size
                                  size=log10pval_trunc)) + 

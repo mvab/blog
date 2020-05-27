@@ -2,7 +2,7 @@
 title: Bubble box plot with ggplot2
 author: Marina Vabistsevits
 date: '2020-05-20'
-image: /img/balloon.jpg
+image: /img/posts/balloon.jpg
 slug: bubble-box-plot-with-ggplot2
 draft: false
 categories: []

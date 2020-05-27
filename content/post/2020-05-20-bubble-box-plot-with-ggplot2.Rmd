@@ -1,0 +1,333 @@
+---
+title: Bubble box plot with ggplot2
+author: Marina Vabistsevits
+date: '2020-05-20'
+image: /img/balloon.jpg
+slug: bubble-box-plot-with-ggplot2
+draft: true
+categories: []
+tags:
+  - Rstats
+  - boxplot
+  - ggplot2
+  - visualisation
+  - workflow
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, include=TRUE, message ="", warning=FALSE)
+```
+
+```{r include=FALSE}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(data.table)
+
+library(ggplot2)
+library(wesanderson)
+library(plotly)
+library(colorspace)
+library(cowplot)
+```
+
+```
+TL;DR 
+
+I like pretty plots so here is how I make a boxplot.
+
+```
+Making plots is R is the best part of any data analysis project. In this blog post, I want to share my workflow of making publication-ready boxplots and show my novel-ish bubble box plots. 
+
+
+### Background
+
+_(skip this if you're here just for the plots)_
+
+The data used in this analysis was produced by [metaCCA method][6], which takes as input summary statistics of several GWAS studies (of related traits) and outputs canonical correlation (CC) values of each SNP with all traits in the input GWAS studies. In other words, metaCCA helps to identify SNPs that may be involved in several biological processes/traits, i.e. could be pleiotropic. 
+
+The GWAS studies I used in this analysis measured phenotypes like BMI, weight, fatness, waist-to-hip ratio, as well as blood pressure. I was interested in finding SNPs that correlate with all of those traits. 
+
+The output of metaCCA is `r_1` CC value with the corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from [GWAS catalogue][7] along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those `trait_summary`-ies.
+
+### Data
+
+Each data point (SNP) has got a
+
+  * correlation coefficient value  [0,1] - `r_1`
+  * p-value - `pval`
+  * category of previously observed association - `trait_summary`
+
+We are interested in:
+
+  * size of each category
+  * distribution of values across all dataset, and within each category
+  * relationship between values and their significance levels
+  
+
+### Building visualisation
+
+
+```{r include=TRUE, eval=F}
+library(dplyr)
+library(tidyr)
+library(data.table)
+library(ggplot2)
+library(wesanderson)
+library(cowplot)
+```
+
+
+
+```{r, echo=F}
+data_path<-"../data/bubble_plot/"
+```
+
+__First look__
+
+```{r}
+# read data and keep SNPs with lablled category
+dat <- fread(paste0(data_path, "data.tsv"), 
+             select=c("SNPS", "r_1", "pval", "trait_summary") ) %>% 
+        filter(!is.na(trait_summary))
+# quick look at the data
+dat %>% tail()
+# check number of data points per categoty
+dat %>% count(trait_summary) %>% arrange(desc(n))
+```
+
+```{r, echo=F}
+# downsize data to 40% for clearer viz purposres
+# this step is not shown 
+set.seed(11)
+dat2<-rsample::initial_split(dat, prop=0.6, strata = "trait_summary")
+dat <- rsample::testing(dat2)
+```
+
+<br>
+__Basic boxplot__  
+Let's start with simple boxplots by category - 
+
+
+```{r  fig.width=7, fig.height=5}
+ggplot(data = dat, 
+       mapping = aes(x = trait_summary, y = r_1, fill = trait_summary)) + 
+   geom_boxplot() 
+```
+
+This plot serves the purpose of showing what is going on in the dataset, but we can make it look a lot nicer than this. 
+
+__Tidy axes__
+
+Firstly, let's get rid of ggplot2's default grey background! I've recently discovered [cowplot][1] package, which is an add-on to ggplot2 that transfers R plots into **publication-ready figures**.  Also:
+
+  - x-axis category labels need to be rotated to be readable. Not 90 degrees though, they need to be readable without tilting the head! 
+  - remove the colour legend, it's redundant in this case
+  - add descriptive y-axis label, remove x-axis label, add a title!
+
+
+```{r fig.width=6, fig.height=6}
+ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)) + 
+  geom_boxplot()+
+  # cowplot theme
+  theme_minimal_hgrid(9, rel_small = 1) +
+  # rotate x-axis labels, drop legend
+  theme(axis.text.x = element_text(angle = 35, hjust = 1),
+        legend.position = "none")+
+  labs(title="metaCCA results grouped into known SNPs association groups",
+       y = "Canonical Correlation (CC) value (r_1)", x = "")
+```
+
+<br>
+__Time for nice colours__
+
+As much as dislike grey background, even more, I resent the rainbow palette. Using it on a categorical data is not a major problem (other than it looks ugly), [here][2] is why you should never use it on continuous data.
+
+I'm always on the lookout for new palettes. Recently I've discovered a Wes Anderson movies-themed palette [R package][3], and it's wondeful! The author's README says _"I saved you from boring plots"_ and it's so true. I believe the package was inspired by the tumblr account [wesandersonpalettes.tumblr.com][4], so many great palette ideas there!
+
+The only drawback of these palettes is that they are all quite small, so for my multi-category plot, I will need to make a frankenstein palette. For my current data, I like the colours in `Darjeeling1` and `Zissou1`
+
+
+```{r fig.width=2, fig.height=1}
+wes_palette("Darjeeling1")
+```
+
+```{r fig.width=2, fig.height=1}
+wes_palette("Zissou1")
+```
+
+
+Here is a finished palette for my 17 categories (skipping the steps of manually selecting the colours)
+
+```{r}
+mypal<-c("#78B7C5",  "#EBCC2A", "#FF0000", "#EABE94", 
+         "#3B9AB2", "#B40F20", "#0B775E", "#F2300F", 
+         "#5BBCD6", "#F98400", "#ab0213", "#E2D200", 
+         "#ff7700", "#46ACC8", "#00A08A", "#78B7C5",
+         "#DD8D29")
+
+# TIP: use scales library to view the palette you created
+scales::show_col(mypal)
+```
+Adding my new palette to the plot - 
+
+```{r fig.width=6, fig.height=6}
+ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)) + 
+  geom_boxplot()+
+  theme_minimal_hgrid(10, rel_small = 1) +
+  # add manual palette
+  scale_fill_manual(values = mypal)+
+  theme(axis.text.x = element_text(angle = 35, hjust = 1),
+        legend.position = "none")+
+  labs(title="metaCCA results grouped into known SNPs association groups",
+       y = "Canonical Correlation (CC) value (r_1)", x = "")
+```
+
+These boxplots look much better to me :tada:
+
+The colour choice here is random (and somewhat repetitive), except `Anthropometric` and `Cardiovascular` categories, which I made bright red to highlight the results of these groups. 
+
+<br>
+_Some discussion_
+
+(skip this if you're here just for the plots; this will only make sense if you've read the data background part, otherwise move on to the next section!)
+
+The input data to the metaCCA analysis were several GWAS studies focused on body size and weight-related traits, as well as blood pressure measures. The CC values (y-axis) of SNPs returned by the analysis represent their correlation with all input GWAS traits. Having labelled all SNPs (when possible) by their previously reported association from GWAS catalogue, I was able to group them into categories (boxplots). In this way, I was able to visualise the data points summary (e.g. the mean, 1st and 3rd quartile, and highly correlated outliers in each trait group) as boxplots. 
+
+Going into any specific findings is beyond the scope of this post. Therefore, the main take away here is that the two categories of SNP correlations that seem to stand out are Antrophometric and Cardiovascular (annotated by GWAS catalogue!), which is concordant with the input GWAS studies traits.
+
+<br>
+__Jitter plot__
+
+Next, I want to explore individual data points (SNPs) by adding `geom_jitter` to my plot.
+
+```{r fig.width=6, fig.height=6}
+ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)) + 
+  geom_boxplot()+
+  # add individual data points 
+  geom_jitter()+
+  theme_minimal_hgrid(10, rel_small = 1) +
+  scale_fill_manual(values = mypal)+
+  theme(axis.text.x = element_text(angle = 35, hjust = 1),
+        legend.position = "none")+
+  labs(title="metaCCA results grouped into known SNPs association groups",
+       y = "Canonical Correlation (CC) value (r_1)", x = "")
+```
+
+This does not look too good - looks like a wasp attack! :bee:
+
+So next I'm going to
+
+  - exclude the miscellaneous group from the plot - it's too large and heterogeneous (so not very useful for comparing categories)
+  - drop boxplots - we don't need them any more
+  - add colours to the dots, make them bigger and transparent 
+
+... and that gives us a 
+
+
+__Bubble plot__
+
+```{r}
+# filter out Misc group
+dat <- filter(dat, trait_summary != "x_Miscellaneous")
+```
+
+```{r fig.width=7, fig.height=6}
+ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, colour=trait_summary)) + 
+  # modify jitter geom to look like a bubble plot
+  geom_jitter(alpha=0.5, size =5, position = position_jitter(width = 0.4))+
+  theme_minimal_hgrid(10, rel_small = 1) +
+  scale_color_manual(values=darken(mypal, 0.08))+
+  theme(axis.text.x = element_text(angle = 35, hjust = 1),
+        legend.position = "none")+
+  labs(title="metaCCA results grouped into known SNPs association groups",
+       y = "Canonical Correlation (CC) value (r_1)", x = "")
+```
+
+Looks nice!
+
+Normally, a [bubble plot][5] is simply a scatter plot with an extra dimension added by the `size` of the dots. Here, I have used boxplot's jitter option as my bubble plot base, so technically I already have an extra dimension of data grouped nto vertical 'box' categories. 
+
+<br>
+__Adding size dimension__
+
+However, this dataset also contains significance levels for each data point. And we can use it as another dimension and add the p-values to the plot as the dot size! 
+
+Firstly, I converted all p-values that are `< 10e-15` to `10e-15` (including those that just `0`), as when it's that low, the exact value does not matter any more. Then, I `-log10()` the p-values. So now, very low p-values on the log-transformed scale are 15, genome-wide significant p-values ~(`10e-8`) are 7, and the large p-values are closer to 0 on the log scale. 
+```{r}
+# first, create a usable p-value variable (truncated and log10-transformed)
+dat <- mutate(dat, 
+            # convert all super small pval into 1e-15
+            pval_truncated = ifelse(pval < 1e-15, 1e-15, pval),
+            # log transform pvals
+            log10pval_trunc = as.integer(-log10(pval_truncated)))
+```
+
+Let's make this plot!
+
+```{r fig.width=7, fig.height=6}
+ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1,  colour=trait_summary,
+                                 # add bubble size
+                                 size=log10pval_trunc)) + 
+  geom_jitter(alpha=0.4, position = position_jitter(width = 0.4))+
+  theme_minimal_hgrid(10, rel_small = 1) +
+  scale_color_manual(values=darken(mypal, 0.08))+
+    theme(axis.text.x = element_text(angle = 35, hjust = 1),
+        # show legend on top (for size)
+        legend.position="top",
+        legend.box.background = element_blank())+
+  labs(title="metaCCA results grouped into known SNPs association groups",
+       y = "Canonical Correlation (CC) value (r_1)", x = "",
+       size = "-log10pval")+
+  # don't show legend for colour and transparency
+  guides(alpha = FALSE, colour=FALSE)
+```
+
+On the bubble plot, you can see that there is a positive relationship between SNPs' correlation value (y-axis) and p-value: SNPs with low `r_1` value also have low log-transformed p-values (i.e. large p-value), which makes sense. 
+
+
+I think this is where I want to stop for now. This purpose of this post is not to talk about the analysis I've done on metaCCA results, but to show my workflow and thought process from ugly-default-ggplot2 to publication-ready plot with nice colours (in my humble opinion!)
+ 
+ 
+ 
+<br><br>
+ 
+ [__Accidental aRt__][8]
+ 
+When playing with significance as size, I accidentally made a hot-air balloons plot: 
+ 
+![](/figs/accidental_bristol_balloons.png)
+![](/figs/university_of_bristol_hot_air_balloons.jpg)
+
+ 
+_Header photo by AJI on Unsplash_
+```{r, echo=F}
+#"Aging"             "#78B7C5", 
+#"Alcohol"           "#EBCC2A",
+#"Anthropometic"     "#FF0000",
+#"Appearance"    ,   "#EABE94",
+#"Autoimmune"        "#3B9AB2",
+#"Bone"              "#B40F20",
+#"Cancer"            "#0B775E",
+#"Cardiovascular"    "#F2300F",
+#"Education"         "#5BBCD6",
+#"Metabolic"         "#F98400",
+#"Neurological"      "#B40F20",
+#"Personality"       "#E2D200",
+#"Psychiatric"       "#F98400",
+#"Renal"             "#46ACC8",
+#"Respiratory"       "#00A08A",
+#"Vision"            "#78B7C5",
+#"x_Miscellaneous"   "#DD8D29")
+```
+
+[1]: https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html
+[2]: https://www.poynter.org/archive/2013/why-rainbow-colors-arent-always-the-best-options-for-data-visualizations/
+[3]: https://github.com/karthik/wesanderson
+[4]: https://wesandersonpalettes.tumblr.com/
+[5]: https://www.data-to-viz.com/graph/bubble.html
+[6]: https://www.ncbi.nlm.nih.gov/pubmed/27153689
+[7]: https://www.ebi.ac.uk/gwas/
+[8]: https://twitter.com/accidental__aRt
+ 

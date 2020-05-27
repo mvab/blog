@@ -17,6 +17,7 @@ tags:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, include=TRUE, message ="", warning=FALSE)
+knitr::opts_chunk$set(collapse = TRUE, out.width = "100%")
 ```
 
 ```{r include=FALSE}

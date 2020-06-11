@@ -48,7 +48,7 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
   showSupport = true
 
   author = "Marina Vabistsevits"
-  authorAvatar = "img/marina-logo.png" # on blog posts
+  authorAvatar = "/img/marina-logo.png" # on blog posts
   authorLocation = "Bristol, UK"
   authorWebsite = "https://marinalearning.netlify.com"
   authorDescription = "Doctoral student at the University of Bristol"

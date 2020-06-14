@@ -1,7 +1,7 @@
 ---
-title: Bubble box plot with ggplot2
+title: Boxplots and bubble plots with ggplot2
 author: Marina Vabistsevits
-date: '2020-05-20'
+date: '2020-06-16'
 image: /img/posts/balloon.jpg
 slug: bubble-box-plot-with-ggplot2
 draft: true
@@ -24,10 +24,11 @@ knitr::opts_chunk$set(collapse = TRUE, out.width = "100%")
 ```
 TL;DR 
 
-I like pretty plots so here is how I make a boxplot.
+I like pretty plots so here is how I make nice boxplots.
 
 ```
-Making plots is R is the best part of any data analysis project. In this blog post, I want to share my workflow of making publication-ready boxplots and show my novel-ish bubble box plots. 
+Making plots is R is the best part of any data analysis project. In this blog post, I want to share my workflow of making publication-ready boxplots and show my bubble-box plots.
+
 
 
 ### Background
@@ -38,9 +39,10 @@ The data used in this analysis was produced by [metaCCA method][6], which takes 
 
 The GWAS studies I used in this analysis measured phenotypes like BMI, weight, fatness, waist-to-hip ratio, as well as blood pressure. I was interested in finding SNPs that correlate with all of those traits. 
 
-The output of metaCCA is `r_1` CC value with the corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from [GWAS catalogue][7] along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those `trait_summary`-ies.
+The output of metaCCA is `r_1` CC value with a corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from [GWAS catalogue][7] along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those.
 
-### Data
+
+#### Data
 
 Each data point (SNP) has got a
 
@@ -51,15 +53,17 @@ Each data point (SNP) has got a
 We are interested in:
 
   * size of each category
-  * distribution of values across all dataset, and within each category
-  * relationship between values and their significance levels
+  * distribution of values across the entire dataset and within each trait category
+  * relationship between correlation values and their significance levels
   
 
-### Building visualisation
 
-```{r include=TRUE}
+
+
+### Building a visualisation
+
+```{r include=TRUE, message=F, warning=F}
 library(dplyr)
-library(readr)
 library(tidyr)
 library(data.table)
 
@@ -74,23 +78,32 @@ library(cowplot)
 data_path<-"../data/bubble_plot/"
 ```
 
-__First look__
+__First look at the data__
 
 ```{r}
-# read data and keep SNPs with lablled category
+# read data and keep SNPs with labelled category
 dat <- fread(paste0(data_path, "data.tsv"), 
              select=c("SNPS", "r_1", "pval", "trait_summary") ) %>% 
         filter(!is.na(trait_summary))
 ```
 
+
 ```{r}
 # quick look at the data
-dat %>% head()
+dat %>% tail()
 ```
 
 ```{r}
 # check number of data points per categoty
 dat %>% count(trait_summary) %>% arrange(desc(n))
+```
+
+
+```{r}
+# set the (factor) order in which categories appear in the plot: alphabetic + misc is last
+trait_categories <- sort(unique(dat$trait_summary))
+trait_categories <- c(trait_categories[trait_categories != "Miscellaneous"],  "Miscellaneous")
+dat$trait_summary <- factor(dat$trait_summary , levels = trait_categories)
 ```
 
 ```{r, echo=F}
@@ -100,6 +113,7 @@ set.seed(11)
 dat2<-rsample::initial_split(dat, prop=0.6, strata = "trait_summary")
 dat <- rsample::testing(dat2)
 ```
+
 
 <br>
 __Basic boxplot__  
@@ -116,10 +130,10 @@ This plot serves the purpose of showing what is going on in the dataset, but we 
 
 __Tidy axes__
 
-Firstly, let's get rid of ggplot2's default grey background! I've recently discovered [cowplot][1] package, which is an add-on to ggplot2 that transfers R plots into **publication-ready figures**.  Also:
+Firstly, let's get rid of ggplot2's default grey background! I've recently discovered [cowplot][1] package, which is an add-on to ggplot2 that transforms R plots into **publication-ready figures**.  Also:
 
-  - x-axis category labels need to be rotated to be readable. Not 90 degrees though, they need to be readable without tilting the head! 
-  - remove the colour legend, it's redundant in this case
+  - the overlapping x-axis labels need to be rotated to be readable. Not 90 degrees though (golden rule of data viz: a plot has to be readable without having to tilt the head!)
+  - remove the colour legend, it's redundant here
   - add descriptive y-axis label, remove x-axis label, add a title!
 
 
@@ -136,11 +150,11 @@ ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)
 ```
 
 <br>
-__Time for nice colours__
+__It's time for nice colours__
 
 As much as dislike grey background, even more, I resent the rainbow palette. Using it on a categorical data is not a major problem (other than it looks ugly), [here][2] is why you should never use it on continuous data.
 
-I'm always on the lookout for new palettes. Recently I've discovered a Wes Anderson movies-themed palette [R package][3], and it's wondeful! The author's README says _"I saved you from boring plots"_ and it's so true. I believe the package was inspired by the tumblr account [wesandersonpalettes.tumblr.com][4], so many great palette ideas there!
+I'm always on the lookout for new palettes. Recently I've discovered a Wes Anderson movies-themed palette [R package][3], and it's wonderful! The author's README says _"I saved you from boring plots"_ and it's so true. I believe the package was inspired by the tumblr account [wesandersonpalettes.tumblr.com][4], so many great palette ideas there!
 
 The only drawback of these palettes is that they are all quite small, so for my multi-category plot, I will need to make a frankenstein palette. For my current data, I like the colours in `Darjeeling1` and `Zissou1`
 
@@ -187,11 +201,11 @@ The colour choice here is random (and somewhat repetitive), except `Anthropometr
 <br>
 _Some discussion_
 
-(skip this if you're here just for the plots; this will only make sense if you've read the data background part, otherwise move on to the next section!)
+(skip this if you're here just for the plots; this will only make sense if you've read the data Background section, otherwise move on to the next section!)
 
 The input data to the metaCCA analysis were several GWAS studies focused on body size and weight-related traits, as well as blood pressure measures. The CC values (y-axis) of SNPs returned by the analysis represent their correlation with all input GWAS traits. Having labelled all SNPs (when possible) by their previously reported association from GWAS catalogue, I was able to group them into categories (boxplots). In this way, I was able to visualise the data points summary (e.g. the mean, 1st and 3rd quartile, and highly correlated outliers in each trait group) as boxplots. 
 
-Going into any specific findings is beyond the scope of this post. Therefore, the main take away here is that the two categories of SNP correlations that seem to stand out are Antrophometric and Cardiovascular (annotated by GWAS catalogue!), which is concordant with the input GWAS studies traits.
+Going into any specific findings is beyond the scope of this post. Therefore, the main take away here is that the two categories of SNP correlations that seem to stand out are Anthropometric and Cardiovascular (annotated by GWAS catalogue!), which is concordant with the input GWAS traits.
 
 <br>
 __Jitter plot__
@@ -226,7 +240,7 @@ __Bubble plot__
 
 ```{r}
 # filter out Misc group
-dat <- filter(dat, trait_summary != "x_Miscellaneous")
+dat <- filter(dat, trait_summary != "Miscellaneous")
 ```
 
 ```{r fig.width=7, fig.height=6, out.width= "80%"}
@@ -243,7 +257,7 @@ ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, colour=trait_summar
 
 Looks nice!
 
-Normally, a [bubble plot][5] is simply a scatter plot with an extra dimension added by the `size` of the dots. Here, I have used boxplot's jitter option as my bubble plot base, so technically I already have an extra dimension of data grouped nto vertical 'box' categories. 
+Normally, a [bubble plot][5] is simply a scatter plot with an extra dimension added by the `size` of the dots. Here, I have used the jitter option that often comes with boxplots as my bubble plot base, so technically I already have an extra dimension of data grouped into vertical 'box' categories. 
 
 <br>
 __Adding size dimension__
@@ -280,7 +294,7 @@ ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1,  colour=trait_summa
   guides(alpha = FALSE, colour=FALSE)
 ```
 
-On the bubble plot, you can see that there is a positive relationship between SNPs' correlation value (y-axis) and p-value: SNPs with low `r_1` value also have low log-transformed p-values (i.e. large p-value), which makes sense. 
+On the bubble plot, you can see that there is a positive relationship between SNPs' correlation value (y-axis) and p-value (size): SNPs with low `r_1` value also have low log-transformed p-values (i.e. large p-value), which makes sense. 
 
 
 I think this is where I want to stop for now. This purpose of this post is not to talk about the analysis I've done on metaCCA results, but to show my workflow and thought process from ugly-default-ggplot2 to publication-ready plot with nice colours (in my humble opinion!)
@@ -294,6 +308,8 @@ I think this is where I want to stop for now. This purpose of this post is not t
 When playing with significance as size, I accidentally made a hot-air balloons plot: 
  
 ![](/figs/accidental_bristol_balloons.png)
+Reminded me of this - :wink:
+
 ![](/figs/university_of_bristol_hot_air_balloons.jpg)
 
  

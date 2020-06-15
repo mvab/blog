@@ -1,7 +1,7 @@
 baseurl         = "https://marinalearning.netlify.com/"
 theme = "hugo-casper-two"
 languageCode    = "en-UK"
-title = "Marina's blog"
+title = "Marina Learning"
 
 disqusShortname = "marinalearning" # to enable comments
 paginate        = 6   # number of pages 

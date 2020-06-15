@@ -4,7 +4,7 @@ author: Marina Vabistsevits
 date: '2020-06-16'
 image: /img/posts/balloon.jpg
 slug: bubble-box-plot-with-ggplot2
-draft: true
+draft: false
 categories: []
 tags:
   - Rstats
@@ -26,7 +26,7 @@ I like pretty plots so here is how I make nice boxplots.
 <p><em>(skip this if you’re here just for the plots)</em></p>
 <p>The data used in this analysis was produced by <a href="https://www.ncbi.nlm.nih.gov/pubmed/27153689">metaCCA method</a>, which takes as input summary statistics of several GWAS studies (of related traits) and outputs canonical correlation (CC) values of each SNP with all traits in the input GWAS studies. In other words, metaCCA helps to identify SNPs that may be involved in several biological processes/traits, i.e. could be pleiotropic.</p>
 <p>The GWAS studies I used in this analysis measured phenotypes like BMI, weight, fatness, waist-to-hip ratio, as well as blood pressure. I was interested in finding SNPs that correlate with all of those traits.</p>
-<p>The output of metaCCA is <code>r_1</code> CC value with a corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from <a href="https://www.ebi.ac.uk/gwas/">GWAS catalogue</a> along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those.</p>
+<p>The output of metaCCA is <code>r_1</code> CC value with a corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from the <a href="https://www.ebi.ac.uk/gwas/">GWAS catalogue</a> along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those.</p>
 <div id="data" class="section level4">
 <h4>Data</h4>
 <p>Each data point (SNP) has got a</p>
@@ -43,8 +43,8 @@ I like pretty plots so here is how I make nice boxplots.
 </ul>
 </div>
 </div>
-<div id="building-a-visualisation" class="section level3">
-<h3>Building a visualisation</h3>
+<div id="building-the-visualisation" class="section level3">
+<h3>Building the visualisation</h3>
 <pre class="r"><code>library(dplyr)
 library(tidyr)
 library(data.table)
@@ -99,10 +99,10 @@ Let’s start with simple boxplots by category -</p>
    geom_boxplot() </code></pre>
 <p><img src="/post/2020-06-16-bubble-box-plot-with-ggplot2_files/figure-html/unnamed-chunk-8-1.png" width="80%" /></p>
 <p>This plot serves the purpose of showing what is going on in the dataset, but we can make it look a lot nicer than this.</p>
-<p><strong>Tidy axes</strong></p>
+<p><strong>Tidy the axes</strong></p>
 <p>Firstly, let’s get rid of ggplot2’s default grey background! I’ve recently discovered <a href="https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html">cowplot</a> package, which is an add-on to ggplot2 that transforms R plots into <strong>publication-ready figures</strong>. Also:</p>
 <ul>
-<li>the overlapping x-axis labels need to be rotated to be readable. Not 90 degrees though (golden rule of data viz: a plot has to be readable without having to tilt the head!)</li>
+<li>the overlapping x-axis labels need to be rotated to be readable. Not 90 degrees though (the golden rule of data viz: a plot has to be readable without having to tilt your head!)</li>
 <li>remove the colour legend, it’s redundant here</li>
 <li>add descriptive y-axis label, remove x-axis label, add a title!</li>
 </ul>
@@ -167,12 +167,12 @@ Adding my new palette to the plot -</p>
   labs(title=&quot;metaCCA results grouped into known SNPs association groups&quot;,
        y = &quot;Canonical Correlation (CC) value (r_1)&quot;, x = &quot;&quot;)</code></pre>
 <p><img src="/post/2020-06-16-bubble-box-plot-with-ggplot2_files/figure-html/unnamed-chunk-14-1.png" width="70%" /></p>
-<p>This does not look too good - looks like a wasp attack! :bee:</p>
+<p>This does not look good - looks like a wasp attack! :bee:</p>
 <p>So next I’m going to</p>
 <ul>
-<li>exclude the miscellaneous group from the plot - it’s too large and heterogeneous (so not very useful for comparing categories)</li>
+<li>exclude the Miscellaneous group from the plot - it’s too large and heterogeneous (so not very useful for comparing categories)</li>
 <li>drop boxplots - we don’t need them any more</li>
-<li>add colours to the dots, make them bigger and transparent</li>
+<li>add colours to the dots, make them larger and add transparency</li>
 </ul>
 <p>… and that gives us a</p>
 <p><strong>Bubble plot</strong></p>
@@ -221,7 +221,7 @@ dat &lt;- mutate(dat,
 <p>I think this is where I want to stop for now. This purpose of this post is not to talk about the analysis I’ve done on metaCCA results, but to show my workflow and thought process from ugly-default-ggplot2 to publication-ready plot with nice colours (in my humble opinion!)</p>
 <p><br><br></p>
 <p><a href="https://twitter.com/accidental__aRt"><strong>Accidental aRt</strong></a></p>
-<p>When playing with significance as size, I accidentally made a hot-air balloons plot:</p>
+<p>When playing with dot size, I accidentally made a hot-air balloon plot:</p>
 <p><img src="/figs/accidental_bristol_balloons.png" />
 Reminded me of this - :wink:</p>
 <p><img src="/figs/university_of_bristol_hot_air_balloons.jpg" /></p>

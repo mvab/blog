@@ -4,7 +4,7 @@ author: Marina Vabistsevits
 date: '2020-06-16'
 image: /img/posts/balloon.jpg
 slug: bubble-box-plot-with-ggplot2
-draft: true
+draft: false
 categories: []
 tags:
   - Rstats
@@ -39,7 +39,7 @@ The data used in this analysis was produced by [metaCCA method][6], which takes 
 
 The GWAS studies I used in this analysis measured phenotypes like BMI, weight, fatness, waist-to-hip ratio, as well as blood pressure. I was interested in finding SNPs that correlate with all of those traits. 
 
-The output of metaCCA is `r_1` CC value with a corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from [GWAS catalogue][7] along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those.
+The output of metaCCA is `r_1` CC value with a corresponding p-value. To understand whether my analysis picked up SNPs related/correlated with the input traits I needed to check what phenotypes they have previously been found to associate with. To do this, I extracted all my analysed SNPs from the [GWAS catalogue][7] along with their previously reported associations. [As expected, only about 20% of SNPs in my analysis had a catalogued trait association, but that was sufficient to start with]. Then, I have grouped the verbose trait descriptions into summary categories, e.g. Cardiovascular, Neurological, Renal, and annotated each SNP (when possible) with those.
 
 
 #### Data
@@ -60,7 +60,7 @@ We are interested in:
 
 
 
-### Building a visualisation
+### Building the visualisation
 
 ```{r include=TRUE, message=F, warning=F}
 library(dplyr)
@@ -128,11 +128,11 @@ ggplot(data = dat,
 
 This plot serves the purpose of showing what is going on in the dataset, but we can make it look a lot nicer than this. 
 
-__Tidy axes__
+__Tidy the axes__
 
 Firstly, let's get rid of ggplot2's default grey background! I've recently discovered [cowplot][1] package, which is an add-on to ggplot2 that transforms R plots into **publication-ready figures**.  Also:
 
-  - the overlapping x-axis labels need to be rotated to be readable. Not 90 degrees though (golden rule of data viz: a plot has to be readable without having to tilt the head!)
+  - the overlapping x-axis labels need to be rotated to be readable. Not 90 degrees though (the golden rule of data viz: a plot has to be readable without having to tilt your head!)
   - remove the colour legend, it's redundant here
   - add descriptive y-axis label, remove x-axis label, add a title!
 
@@ -225,13 +225,13 @@ ggplot(data = dat, mapping = aes(x = trait_summary, y = r_1, fill=trait_summary)
        y = "Canonical Correlation (CC) value (r_1)", x = "")
 ```
 
-This does not look too good - looks like a wasp attack! :bee:
+This does not look good - looks like a wasp attack! :bee:
 
 So next I'm going to
 
-  - exclude the miscellaneous group from the plot - it's too large and heterogeneous (so not very useful for comparing categories)
+  - exclude the Miscellaneous group from the plot - it's too large and heterogeneous (so not very useful for comparing categories)
   - drop boxplots - we don't need them any more
-  - add colours to the dots, make them bigger and transparent 
+  - add colours to the dots, make them larger and add transparency
 
 ... and that gives us a 
 
@@ -305,7 +305,7 @@ I think this is where I want to stop for now. This purpose of this post is not t
  
  [__Accidental aRt__][8]
  
-When playing with significance as size, I accidentally made a hot-air balloons plot: 
+When playing with dot size, I accidentally made a hot-air balloon plot: 
  
 ![](/figs/accidental_bristol_balloons.png)
 Reminded me of this - :wink:

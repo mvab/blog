@@ -70,10 +70,11 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 
 
  # really weird - with this commented out, still get a page "about me" 
-#[[menu.main]]
-#  name = "About"
-#  url = "/about/"
-#  weight = 10  
+[[menu.main]]
+  name = "About"
+  #url = "/about/"
+  url = "/2020/04/12/my-first-post/"
+  weight = 10  
   
 [[menu.main]]
   name = "Blog"

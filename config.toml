@@ -91,7 +91,8 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
   
 [[menu.main]]
   name = "CV"
-  url = "/vitae/"
+  #url = "/vitae/"
+  url - "/kepler.gl.html"
   #url = "/cv.pdf" #in static folder
   weight = 5  
   

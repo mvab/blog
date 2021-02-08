@@ -26,7 +26,7 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
   #sitename = "Marina's blog"
   #faviconfile = "image/favicon.png"
   
-  copyright   =  "© 2020"
+  copyright   =  "© 2021"
 
   cover       = "img/ivette-pena-cover.jpg"
   description = "A data science blog by Marina Vabistsevits"
@@ -41,7 +41,7 @@ ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "_files$", "_cache$"]
 
 
   #logo = "marina-logo-large.gif" #main page
-  orgName = "Marina Vabistsevits" # C2020
+  orgName = "Marina Vabistsevits" # C2021
   #orgWebsite = "https://marinalearning.netlify.com"
   #orgDescription = "Here is a description placeholder for your org"
 #

@@ -1,0 +1,428 @@
+---
+title: "Setting up Multivariable Mendelian Randomization analysis"
+author: "Marina Vabistsevits"
+date: '2021-03-22'
+image: /img/posts/many_doors.jpg
+slug: setting-up-multivariable-mendelian-randomization-analysis
+categories: []
+draft: no
+tags:
+- Rstats
+- MR
+- MVMR
+- TwoSampleMR
+- MendelianRandomization
+---
+
+<link href="/rmarkdown-libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
+
+
+<p>There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using <a href="https://github.com/MRCIEU/TwoSampleMR"><strong>TwoSampleMR package</strong></a>. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base) or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, <a href="https://github.com/WSpiller/MVMR"><strong>MVMR</strong></a>.</p>
+<p>In this blog post, I want to share my multivariable MR workflow. The workflow includes tidying up raw GWAS data (in my case, data from the IEU GWAS pipeline), doing the analysis first with the TwoSampleMR package, then converting the data into the format required for the MVMR package, and then repeating the analysis using it. Basically, this is the guide that I wish I had found a year ago when I first started doing MR analyses.</p>
+<p><img src="/figs/mvmr.png" width="800px" /></p>
+<p><em>Disclaimer:</em> I set up this workflow when I was working on my first ever MR project. It may not be the ultimate way to do it, but it worked well for me and I used it to reproduce the results from colleagues’ multivariable MR analyses. I’m still learning - if you know how to do it better, please share it.</p>
+<p><strong>Quick summary of what this guide will show:</strong></p>
+<ul>
+<li>how to prepare local GWAS summary statistics data files (i.e. raw output from a GWAS pipeline) for (any) MR analysis</li>
+<li>how to set up multivariable MR analysis with TwoSampleMR package on local files, or combine local files and MR-base traits in a single analysis</li>
+<li>how to create the input in the right format for use in the MVMR package</li>
+<li>the workflow will also work on &gt;2 exposures</li>
+</ul>
+<p><em>The blog post will focus on the analysis implementation and not the theoretical background or results interpretation.</em></p>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>In this example, I will perform multivariable MR on Adult BMI and Early life BMI as two exposures (from local text files generated with IEU GWAS pipeline from UK Biobank data) and breast cancer as the outcome (from <a href="https://gwas.mrcieu.ac.uk/">MR-Base/OpenGWAS</a>: ‘ieu-a-1126’, BCAC full sample).</p>
+<p><strong>For the analysis we need:</strong></p>
+<ul>
+<li>exposure GWASs full summary statistics <a href="#optional">(tidy and formatted)</a></li>
+<li>exposure GWASs tophits (SNPs at p-value &lt; 5e-8) <a href="#optional">(tidy and formatted)</a></li>
+<li>outcome GWAS full summary stats (will be accessed with TwoSampleMR from MR-Base, but also can use a local file)</li>
+</ul>
+<pre class="r"><code>library(readr)
+library(vroom)
+library(tidyr)
+library(tibble)
+library(dplyr)
+library(TwoSampleMR)
+library(MVMR)</code></pre>
+<div id="load-tophits-data" class="section level3">
+<h3>Load tophits data</h3>
+<p><em>NB these files have been pre-generated and tidied up, see the <a href="#optional">section</a> at the end showing how they were created</em></p>
+<pre class="r"><code># Load BMI exposures
+adult_bmi_exp &lt;- read_tsv(paste0(data_path, &quot;adult_bmi_tophits.tsv&quot;))
+early_bmi_exp &lt;- read_tsv(paste0(data_path, &quot;early_bmi_adj_tophits.tsv&quot;))</code></pre>
+<pre><code>Tophits in Adult BMI: 173
+Tophits in Early BMI: 115</code></pre>
+<p>The tophits files are in <code>.exposure</code> format (as used in TwoSampleMR)</p>
+<pre class="r"><code>glimpse(early_bmi_exp)
+Rows: 115
+Columns: 11
+$ exposure               &lt;chr&gt; &quot;Childhood BMI&quot;, &quot;Childhood BMI&quot;, &quot;Childhood B…
+$ SNP                    &lt;chr&gt; &quot;rs1546881&quot;, &quot;rs212540&quot;, &quot;rs582220&quot;, &quot;rs276748…
+$ beta.exposure          &lt;dbl&gt; -0.0125829, 0.0126875, -0.0114819, -0.0203200,…
+$ se.exposure            &lt;dbl&gt; 0.00223915, 0.00200119, 0.00195829, 0.00241081…
+$ effect_allele.exposure &lt;chr&gt; &quot;T&quot;, &quot;C&quot;, &quot;A&quot;, &quot;A&quot;, &quot;G&quot;, &quot;A&quot;, &quot;T&quot;, &quot;A&quot;, &quot;C&quot;, &quot;…
+$ other_allele.exposure  &lt;chr&gt; &quot;A&quot;, &quot;T&quot;, &quot;G&quot;, &quot;G&quot;, &quot;A&quot;, &quot;G&quot;, &quot;G&quot;, &quot;G&quot;, &quot;T&quot;, &quot;…
+$ eaf.exposure           &lt;dbl&gt; 0.627849, 0.392503, 0.433296, 0.798051, 0.4868…
+$ pval.exposure          &lt;dbl&gt; 1.9e-08, 2.3e-10, 4.5e-09, 3.5e-17, 5.6e-14, 2…
+$ mr_keep.exposure       &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+$ pval_origin.exposure   &lt;chr&gt; &quot;reported&quot;, &quot;reported&quot;, &quot;reported&quot;, &quot;reported&quot;…
+$ id.exposure            &lt;chr&gt; &quot;1fWtbt&quot;, &quot;1fWtbt&quot;, &quot;1fWtbt&quot;, &quot;1fWtbt&quot;, &quot;1fWtb…</code></pre>
+</div>
+<div id="load-full-summary-stats" class="section level3">
+<h3>Load full summary stats</h3>
+<p><em>NB these files have been pre-generated and tidied up, see the <a href="#optional">section</a> at the end showing how they were created</em></p>
+<pre class="r"><code># Load full GWAS for exposures 
+adult_bmi_gwas &lt;- vroom(paste0(data_path, &quot;adult_bmi_GWAS_tidy_outcome.txt.gz&quot;))
+early_bmi_gwas &lt;- vroom(paste0(data_path, &quot;early_bmi_adj_GWAS_tidy_outcome.txt.gz&quot;))</code></pre>
+<p>The full summary data for exposures is in <code>.outcome</code> format (as used in TwoSampleMR). This is required for harmonisation at a later stage.</p>
+<pre><code>Adult BMI full GWAS SNPs: 12298857
+Early BMI full GWAS SNPs: 12298857</code></pre>
+<pre class="r"><code>glimpse(early_bmi_gwas)
+Rows: 12,298,857
+Columns: 11
+$ SNP                   &lt;chr&gt; &quot;rs367896724&quot;, &quot;rs201106462&quot;, &quot;rs575272151&quot;, &quot;r…
+$ beta.outcome          &lt;dbl&gt; 0.001015650, 0.002177780, 0.007636850, 0.007636…
+$ se.outcome            &lt;dbl&gt; 0.00288045, 0.00296241, 0.00494634, 0.00494634,…
+$ effect_allele.outcome &lt;chr&gt; &quot;A&quot;, &quot;T&quot;, &quot;C&quot;, &quot;C&quot;, &quot;G&quot;, &quot;T&quot;, &quot;A&quot;, &quot;G&quot;, &quot;A&quot;, &quot;T…
+$ other_allele.outcome  &lt;chr&gt; &quot;AC&quot;, &quot;TA&quot;, &quot;G&quot;, &quot;G&quot;, &quot;A&quot;, &quot;G&quot;, &quot;G&quot;, &quot;C&quot;, &quot;T&quot;, …
+$ eaf.outcome           &lt;dbl&gt; 0.6016460, 0.6064280, 0.9141210, 0.9141210, 0.9…
+$ pval.outcome          &lt;dbl&gt; 0.720, 0.460, 0.120, 0.120, 0.120, 0.450, 0.450…
+$ outcome               &lt;chr&gt; &quot;Early BMI&quot;, &quot;Early BMI&quot;, &quot;Early BMI&quot;, &quot;Early B…
+$ mr_keep.outcome       &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,…
+$ pval_origin.outcome   &lt;chr&gt; &quot;reported&quot;, &quot;reported&quot;, &quot;reported&quot;, &quot;reported&quot;,…
+$ id.outcome            &lt;chr&gt; &quot;G4X7wF&quot;, &quot;G4X7wF&quot;, &quot;G4X7wF&quot;, &quot;G4X7wF&quot;, &quot;G4X7wF…</code></pre>
+</div>
+<div id="create-list-objects-for-the-exposures" class="section level3">
+<h3>Create list objects for the exposures</h3>
+<p>Next, we will create two list objects: tophits and full data of the exposures. These lists will be used as input for multivariable MR analysis in both TwoSampleMR and MVMR packages. If you have &gt; 2 exposures to analyse, simply add the corresponding <code>.exposure</code> / <code>.outcome</code> data into the lists.</p>
+<pre class="r"><code># create list objects for tophits and full gwas summary stats
+tophits_list &lt;- list(early_bmi_exp, adult_bmi_exp)
+full_gwas_list &lt;- list(early_bmi_gwas, adult_bmi_gwas)</code></pre>
+<p><em>If you want to use one local exposure and another one from MR-Base, see <a href="#mixed_source">supplementary section</a> at end for details.</em></p>
+<p><br></p>
+</div>
+</div>
+<div id="multivariable-mr-with-twosamplemr-package" class="section level2">
+<h2>Multivariable MR with TwoSampleMR package</h2>
+<p>Multivariable MR with TwoSampleMR using MR-Base data is well-described in the original <a href="https://mrcieu.github.io/TwoSampleMR/articles/perform_mr.html#multivariable-mr">TwoSampleMR guide</a>. Here I’ll be showing how to set up the first step of analysis (i.e. extracting instrumental variables from the exposures) if your exposure data is local. <em>NB please see the important <a href="#note"><span style="color:red">note</span></a> about this approach later.</em></p>
+<p>I created a modified version of the original TwoSampleMR function <code>mv_extract_exposures()</code> for extracting instruments for multiple exposures: <code>get_mv_exposures()</code> uses as input the lists of tophits/full datathat we generated earlier and produces a data frame in the same format as the original <code>mv_extract_exposures()</code>.</p>
+<p>Using <code>get_mv_exposures</code> we create <code>exposure_dat</code>:</p>
+<pre class="r"><code>#Create exposure_dat, i.e. obtain instruments for each exposure (early BMI/adult BMI)
+# (the function is defined later, remember to run it first)
+
+exposure_dat &lt;- get_mv_exposures(tophits_list, full_gwas_list)</code></pre>
+<p>Next, we carry on with multivariable MR analysis as described in the <a href="https://mrcieu.github.io/TwoSampleMR/articles/perform_mr.html#multivariable-mr">TwoSampleMR guide</a>:</p>
+<pre class="r"><code>#Next,  extract those instruments/SNPs from the outcome (breast cancer MR-Base ID ieu-a-1126) 
+outcome_dat &lt;- extract_outcome_data(snps = exposure_dat$SNP, outcomes = &#39;ieu-a-1126&#39;)
+
+#Once the data has been obtained, harmonise so that exposure_dat and outcome_dat are on the same reference allele
+mvdat &lt;- mv_harmonise_data(exposure_dat, outcome_dat)
+
+#Finally, perform the multivariable MR analysis
+res_bmis &lt;- mv_multiple(mvdat)
+
+
+# Creating a tidy outcome
+result_2smr &lt;- res_bmis$result %&gt;%
+              split_outcome() %&gt;%
+              separate(outcome, &quot;outcome&quot;, sep=&quot;[(]&quot;) %&gt;% 
+              mutate(outcome=stringr::str_trim(outcome))%&gt;% 
+              generate_odds_ratios() %&gt;% 
+              select(-id.exposure, -id.outcome) %&gt;% 
+              tidy_pvals()
+
+result_2smr
+   exposure       outcome nsnp     b   se    pval lo_ci up_ci   or or_lci95
+1 Early BMI Breast cancer   82 -0.47 0.10 9.8e-07 -0.66 -0.28 0.62     0.52
+2 Adult BMI Breast cancer  129  0.08 0.09 3.9e-01 -0.10  0.26 1.08     0.90
+  or_uci95
+1     0.75
+2     1.29</code></pre>
+<p>Now let’s take a step back and inspect <code>get_mv_exposures()</code>:</p>
+<p><a id="note"></a></p>
+<p><strong><span style="color:red">Please note:</span></strong> <em>at the time of writing this blog post (March 2021), I discovered that a new <a href="https://github.com/MRCIEU/TwoSampleMR/commit/a7d096809073b0da16896abdb64b8ea06f309e27#diff-e7246f626d1acc1f40c81a1873f0f658273c6eb7f1b83751424ef1ae5ec47834R89">function <code>mv_extract_exposures_local()</code></a> was added to TwoSampleMR <a href="https://mrcieu.github.io/TwoSampleMR/articles/perform_mr.html#using-your-own-summary-data">guide</a> in February 2021 (appeared in the codebase in May 2020). It is implemented in a very similar way with using lists, as my version <code>get_mv_exposures()</code> below. Therefore, I wanted to mention here that this is not an attempt to re-engineer the new existing TwoSampleMR’s function - I arrived at this solution independently when working on my first MR project in March-April 2020, and I have a dated Gitlab copy of this work from March 2020. I still wanted to write up this work in a blog post, as some parts of it might be useful to someone. I have tested the new function and confirmed that my solution produces the same results.</em> <em><span style="color:lightgrey">(if l_full on <a href="https://github.com/MRCIEU/TwoSampleMR/blob/master/R/multivariable_mr.R#L114">line 114</a> is replaced with l_inst)</span></em></p>
+<pre class="r"><code>get_mv_exposures &lt;- function(tophits_list, full_gwas_list) {
+  
+  ###
+  ### This is a modified version of `mv_extract_exposures` function in TwoSampleMR package.
+  ###
+  
+  # Collapse list of exposures&#39; tophits into a dataframe
+  exposures &lt;- bind_rows(tophits_list)
+
+  # clump exposures: this will produce a list of instruments (shared and unique) of the given exposures
+  temp &lt;- exposures
+  temp$id.exposure &lt;- 1
+  temp &lt;- clump_data(temp)
+  exposures &lt;- filter(exposures, SNP %in% temp$SNP)
+  
+  # subset full gwas summary stats of each exposure to the list of SNPs (instruments) produced above
+  for (i in 1:length(full_gwas_list)){
+    full_gwas_list[[i]] &lt;- full_gwas_list[[i]] %&gt;% filter(SNP %in% exposures$SNP)
+  }
+  
+  # Collapse lists of subset gwas into a dataframe
+  d1 &lt;- bind_rows(full_gwas_list) %&gt;%
+        distinct()
+
+  ###  The logic of next steps is largely unchanged from the original function `mv_extract_exposures`
+  
+  # get auto-generated ids
+  id_exposure &lt;- unique(d1$id.outcome) 
+  
+  # convert first trait to exposure format  -- exp1 is exposure
+  tmp_exposure &lt;- d1 %&gt;% filter(id.outcome == id_exposure[1]) %&gt;% convert_outcome_to_exposure()
+  # keep other traits (n&gt;=2) as outcome -- exp2+ are outcomes
+  tmp_outcome &lt;- d1 %&gt;% filter(id.outcome != id_exposure[1])
+  
+  # Harmonise against the first trait
+  d &lt;- harmonise_data(exposure_dat = tmp_exposure, 
+                      outcome_dat = tmp_outcome, action=2)
+  
+  # Only keep SNPs that are present in all
+  snps_not_in_all &lt;- d %&gt;% 
+                    count(SNP)  %&gt;% 
+                    filter(n &lt; length(tophits_list)-1) %&gt;%
+                    pull(SNP)
+  d &lt;- filter(d, !SNP %in% snps_not_in_all)
+
+  # Subset and concat data
+  
+  # for exp1 get exposure cols
+  dh1x &lt;- d %&gt;% filter(id.outcome == id.outcome[1]) %&gt;% 
+    select(SNP, contains(&quot;exposure&quot;))
+  # for exp2 get outcome cols
+  dh2x &lt;-d %&gt;%  select(SNP, contains(&quot;outcome&quot;))
+  # rename outcome to exposure in these
+  names(dh2x) &lt;- gsub(&quot;outcome&quot;, &quot;exposure&quot;, names(dh2x) )
+  # join together (drop not needed cols)
+  exposure_dat &lt;- bind_rows(dh1x, dh2x) %&gt;%  
+    select(-c(&quot;samplesize.exposure&quot; ,&quot;mr_keep.exposure&quot;, &quot;pval_origin.exposure&quot;)) %&gt;% 
+    distinct()
+  
+  return(exposure_dat)
+}</code></pre>
+</div>
+<div id="multivariable-mr-with-mvmr-package" class="section level2">
+<h2>Multivariable MR with MVMR package</h2>
+<p>Next, we will create the input for multivariable MR analysis with the MVMR package. We can use the same <code>tophits_list</code> object and the <code>exposure_dat</code> data frame that were created as the inputs for the analysis with TwoSampleMR.</p>
+<p>The required MVMR input format is well-described in the package <a href="https://github.com/WSpiller/MVMR/blob/master/vignettes/MVMR.rmd#L38">vignette</a>, and an example of what the data should look like is provided. However, when I was trying to create it for the first time, I found it quite challenging. So after a few attempts and some guidance, I decided to automate it and created a function <code>make_mvmr_input()</code>. This function takes the same input as used by TwoSampleMR functions and generates the data in the format required for the MVMR function.</p>
+<p>The function takes <code>tophits_list</code>, <code>exposure_dat</code>, <code>outcome.id.mrbase</code> (dataset id in MR-Base)- or, if you want to use local data for the outcome, use <code>outcome.data</code> argument (expects full GWAS data in <code>.outcome</code> format).</p>
+<pre class="r"><code># create MVMR package input
+# (the function is defined later, remember to run it first)
+mvmr_input &lt;- make_mvmr_input(exposure_dat, tophits_list, outcome.id.mrbase= &#39;ieu-a-1126&#39;)</code></pre>
+<p>The function returns <code>beta</code> and <code>se</code> values for each exposure in <code>mvmr_input$XGs</code> and same for the outcome in <code>mvmr_input$Y</code>.</p>
+<pre class="r"><code>glimpse(mvmr_input$XGs)
+Rows: 195
+Columns: 5
+$ SNP                       &lt;chr&gt; &quot;rs10050620&quot;, &quot;rs1013402&quot;, &quot;rs1013737&quot;, &quot;rs…
+$ `beta.exposure_Early BMI` &lt;dbl&gt; 0.015941500, -0.014079000, -0.010857900, 0.…
+$ `beta.exposure_Adult BMI` &lt;dbl&gt; 0.00968434, -0.02127110, -0.00575052, 0.013…
+$ `se.exposure_Early BMI`   &lt;dbl&gt; 0.00206879, 0.00207208, 0.00193935, 0.00194…
+$ `se.exposure_Adult BMI`   &lt;dbl&gt; 0.00210348, 0.00210760, 0.00197324, 0.00197…
+
+glimpse(mvmr_input$Y)
+Rows: 195
+Columns: 3
+$ SNP          &lt;chr&gt; &quot;rs10050620&quot;, &quot;rs1013402&quot;, &quot;rs1013737&quot;, &quot;rs10404726&quot;, &quot;r…
+$ beta.outcome &lt;dbl&gt; -0.0114, 0.0045, 0.0013, 0.0152, -0.0010, -0.0100, 0.007…
+$ se.outcome   &lt;dbl&gt; 0.0071, 0.0068, 0.0066, 0.0066, 0.0074, 0.0062, 0.0075, …</code></pre>
+<p>Next, we will select the required columns in <code>mvmr_input</code> when calling the <code>format_mvmr()</code> function from the MVMR package, which will further transform the data to work with the MVMR’s multivariable MR function.</p>
+<pre class="r"><code># format data to be in MVMR package-compatible df
+mvmr_out &lt;- format_mvmr(BXGs = mvmr_input$XGs %&gt;% select(contains(&quot;beta.&quot;)),  # exposure betas
+                        BYG = mvmr_input$YG$beta.outcome,                     # outcome beta
+                        seBXGs = mvmr_input$XGs %&gt;% select(contains(&quot;se.&quot;)),  # exposure SEs
+                        seBYG = mvmr_input$YG$se.outcome,                     # outcome SEs
+                        RSID = mvmr_input$XGs$SNP)                            # SNPs
+
+head(mvmr_out)
+         SNP  betaYG sebetaYG       betaX1      betaX2   sebetaX1   sebetaX2
+1 rs10050620 -0.0114   0.0071  0.015941500  0.00968434 0.00206879 0.00210348
+2  rs1013402  0.0045   0.0068 -0.014079000 -0.02127110 0.00207208 0.00210760
+3  rs1013737  0.0013   0.0066 -0.010857900 -0.00575052 0.00193935 0.00197324
+4 rs10404726  0.0152   0.0066  0.008036340  0.01384730 0.00194207 0.00197647
+5 rs10510025 -0.0010   0.0074  0.000228142 -0.01325810 0.00224989 0.00228816
+6 rs10514963 -0.0100   0.0062 -0.002796960 -0.01372250 0.00193431 0.00196677</code></pre>
+<p>Now apply <code>ivw_mvmr()</code> MVMR’s multivariable MR function:</p>
+<pre class="r"><code>#  estimate causal effects using method in MVMR package
+mvmr_res &lt;- ivw_mvmr(r_input=mvmr_out)
+
+Multivariable MR
+
+             Estimate Std. Error    t value     Pr(&gt;|t|)
+exposure1 -0.49167514 0.09347120 -5.2601779 3.804241e-07
+exposure2  0.06159543 0.08883253  0.6933883 4.888995e-01
+
+Residual standard error: 1.719 on 193 degrees of freedom</code></pre>
+<p>Tidy up the output format:</p>
+<pre class="r"><code>result_mvmr &lt;-
+    mvmr_res %&gt;% 
+    tidy_mvmr_output() %&gt;% 
+    mutate(exposure = unique(exposure_dat$exposure),
+           outcome = &#39;Breast cancer&#39;) %&gt;% 
+    select(exposure, outcome, everything()) %&gt;% 
+    tidy_pvals()
+
+result_mvmr
+   exposure       outcome     b   se    pval lo_ci up_ci   or or_lci95 or_uci95
+1 Early BMI Breast cancer -0.49 0.09 3.8e-07 -0.67 -0.31 0.61     0.51     0.73
+2 Adult BMI Breast cancer  0.06 0.09 4.9e-01 -0.11  0.24 1.06     0.89     1.27</code></pre>
+<p>Let’s take look closer at what is happening in the <code>make_mvmr_input()</code> function:</p>
+<pre class="r"><code>#  function to convert 2SMR format into MVMR format
+
+make_mvmr_input &lt;- function(exposure_dat, tophits_list, outcome.id.mrbase=&quot;&quot;, outcome.data=&quot;&quot;){
+  # provide exposure_dat and tophits_list created in the same as for TwoSampleMR 
+  # also specify the outcome argument [only ONE!] (MR-base ID or full gwas data in .outcome format)
+  
+  # convert exposure_dat to wider format
+  exposures_joined_auto &lt;- exposure_dat %&gt;%
+    select(SNP, exposure, beta.exposure, se.exposure) %&gt;% 
+    pivot_wider(names_from = exposure, values_from = c(beta.exposure, se.exposure)) 
+
+  
+  # extract SNPs for both exposures from outcome dataset
+  # (for the selected option mr.base or local outcome data)
+  if (outcome.id.mrbase != &quot;&quot;) {
+    # if mrbase.id is provided
+    outcome_dat &lt;- extract_outcome_data(snps = exposures_joined_auto$SNP,
+                                        outcomes = outcome.id.mrbase)
+  } else if (outcome.data != &quot;&quot;){
+    # if outcome df is provided
+    outcome_dat &lt;- outcome.data %&gt;% filter(SNP %in% exposures_joined_auto$SNP)
+  }
+  
+  # harmonize datasets 
+  exposures &lt;- bind_rows(tophits_list)
+  outcome_harmonised &lt;- harmonise_data(exposures, outcome_dat)
+  
+  
+  # Create variables for the analysis
+  # remove factors structure in SNPs, and sort by SNP (YGs and XGs must have SNPs in the same order)
+  YG &lt;- outcome_harmonised %&gt;% 
+    select(&quot;SNP&quot;, &quot;beta.outcome&quot;, &quot;se.outcome&quot;) %&gt;%
+    distinct() %&gt;%
+    mutate(SNP = as.character(SNP)) %&gt;%
+    arrange((SNP)) 
+  
+  XGs &lt;- exposures_joined_auto %&gt;% 
+    filter(SNP %in% outcome_harmonised$SNP) %&gt;%
+    mutate(SNP = as.character(SNP)) %&gt;%
+    arrange((SNP)) 
+  
+  # some checks
+  stopifnot(dim(XGs)[1]==dim(YG)[1])
+  unique(YG$SNP %in% XGs$SNP)
+  unique(XGs$SNP %in% YG$SNP)
+  all.equal(YG$SNP, XGs$SNP)
+
+  return(list(YG = YG,
+              XGs = XGs))
+}</code></pre>
+<p>Other functions used above:</p>
+<pre class="r"><code>tidy_pvals&lt;-function(df){
+  # round up output values and keep p-vals in scientific notation
+  df %&gt;% 
+    mutate(pval= as.character(pval)) %&gt;% 
+    mutate_if(is.numeric, round, digits=2) %&gt;% 
+    mutate(pval=as.numeric(pval),
+           pval=scales::scientific(pval, digits = 2),
+           pval=as.numeric(pval))
+}
+
+tidy_mvmr_output &lt;- function(mvmr_res) {
+  #  tidy up MVMR returned output
+  mvmr_res %&gt;%
+    as.data.frame() %&gt;% 
+    rownames_to_column(&quot;exposure&quot;) %&gt;% 
+    rename(b=Estimate,
+           se=&quot;Std. Error&quot;,
+           pval=&quot;Pr(&gt;|t|)&quot;) %&gt;% 
+    select(-c(`t value`)) %&gt;% 
+    TwoSampleMR::generate_odds_ratios()
+}</code></pre>
+<p><br></p>
+</div>
+<div id="results-comparison" class="section level2">
+<h2>Results comparison</h2>
+<p>Here is the side by side output comparison of two packages:</p>
+<p><strong>TwoSampleMR:</strong></p>
+<pre class="r"><code>result_2smr %&gt;% select(-nsnp)
+   exposure       outcome     b   se    pval lo_ci up_ci   or or_lci95 or_uci95
+1 Early BMI Breast cancer -0.47 0.10 9.8e-07 -0.66 -0.28 0.62     0.52     0.75
+2 Adult BMI Breast cancer  0.08 0.09 3.9e-01 -0.10  0.26 1.08     0.90     1.29</code></pre>
+<p><strong>MVMR:</strong></p>
+<pre class="r"><code>result_mvmr
+   exposure       outcome     b   se    pval lo_ci up_ci   or or_lci95 or_uci95
+1 Early BMI Breast cancer -0.49 0.09 3.8e-07 -0.67 -0.31 0.61     0.51     0.73
+2 Adult BMI Breast cancer  0.06 0.09 4.9e-01 -0.11  0.24 1.06     0.89     1.27</code></pre>
+<p><img src="/post/2021-03-14-setting-up-multivariable-mendelian-randomization-analysis_files/figure-html/unnamed-chunk-23-1.png" width="90%" /></p>
+<p><br>
+<br></p>
+<p><a id="mixed_source"></a></p>
+<div id="supplementary-how-to-use-exposures-from-mixed-sources" class="section level3">
+<h3>Supplementary: how to use exposures from mixed sources</h3>
+<p>Using one exposure from MR-base and another from local data is easy. Let’s say we want to keep Early life BMI as our first exposure (use the local data loaded above: <code>early_bmi_exp</code> and <code>early_bmi_gwas</code>) and the second exposure will be MR-Base trait ‘ieu-a-1095’, age at menarche.</p>
+<pre class="r"><code># load instruments for MR-base trait
+menarche_exp &lt;- extract_instruments(&#39;ieu-a-1095&#39;)
+
+## create a list object for tophits
+tophits_list &lt;- list(early_bmi_exp, menarche_exp)
+    
+    
+# get all instruments from both exposures
+tophits &lt;- bind_rows(tophits_list) %&gt;% pull(SNP)
+
+# get all required SNPs from the &#39;full gwas&#39; of MR-Base tarit in the .outcome format
+menarche_gwas &lt;- extract_outcome_data(snps = tophits, outcomes = &#39;ieu-a-1095&#39;)
+
+## create a list object for full gwas of the traits
+full_gwas_list &lt;- list(early_bmi_gwas, menarche_gwas)</code></pre>
+<p>Now <code>tophits_list</code> and <code>full_gwas_list</code> can be used in multivariable analysis as shown above.</p>
+<p><br>
+<br></p>
+<p><a id="optional"></a></p>
+</div>
+<div id="optional-tidying-up-raw-gwas-data" class="section level3">
+<h3>(optional) Tidying up raw GWAS data</h3>
+<p>This section shows how I formatted raw data prior to the analysis and produced two files:</p>
+<ol style="list-style-type: decimal">
+<li>tidy full GWAS file in TwoSampleMR <code>.outcome</code> format</li>
+<li>tidy tophits (i.e. SNPs at p-vale &lt; 5e-8) file in TwoSampleMR <code>.exposure</code> format</li>
+</ol>
+<pre class="r"><code># raw file location
+raw_gwas_file &lt;- paste0(data_path, &#39;adult_bmi_GWAS_raw_pipeline_output.txt.gz&#39;)
+
+gwas_outcome_format &lt;-
+     vroom(raw_gwas_file,       # vroom is faster than fread!
+           #  only read in columns that we need and 
+           col_select = c(&quot;SNP&quot;,&quot;BETA&quot;,&quot;SE&quot;,
+                         &quot;ALLELE1&quot;,&quot;ALLELE0&quot;,&quot;A1FREQ&quot;,
+                         &quot;P_BOLT_LMM_INF&quot;)) %&gt;% 
+     # format data into the &#39;outcome&#39; format right away
+     format_data(., type = &quot;outcome&quot;,
+                    snp_col = &quot;SNP&quot;,
+                    beta_col = &quot;BETA&quot;,
+                    se_col = &quot;SE&quot;,
+                    effect_allele_col = &quot;ALLELE1&quot;,
+                    other_allele_col = &quot;ALLELE0&quot;,
+                    eaf_col = &quot;A1FREQ&quot;,
+                    pval_col = &quot;P_BOLT_LMM_INF&quot;) %&gt;% 
+      # store trait name in the data frame (this will make later analysis easier)
+      mutate(outcome = &#39;Adult BMI&#39;)
+
+# save this tidy and formatted file so that it cam be used directly in MR analysis later
+vroom_write(gwas_outcome_format, path = paste0(data_path,&#39;adult_bmi_GWAS_tidy_outcome.txt.gz&#39;))
+
+# from the file that we read in, extract the tophits and save them in tophits file; 
+# this file will also be used directly in MR analysis later
+tophits &lt;- 
+  gwas_outcome_format %&gt;% 
+      filter(pval.outcome &lt; 5e-8) %&gt;% 
+      convert_outcome_to_exposure() %&gt;% 
+      clump_data(., clump_r2 = 0.001)
+
+write_tsv(tophits, path = paste0(data_path, &#39;adult_bmi_tophits.tsv&#39;))</code></pre>
+</div>
+</div>

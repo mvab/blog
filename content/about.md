@@ -11,14 +11,13 @@ title: About
 type: page
 ---
 
-My name is Marina and I’m a PhD student at the University of Bristol, MRC Integrative Epidemiology Unit. Welcome to my data analysis blog! 
+My name is Marina and I'm a PhD student at the University of Bristol, MRC Integrative Epidemiology Unit. Welcome to my data analysis blog! 
 
-My background is in Bioinformatics and Direct-to-Consumer Genetics, and currently I’m interested in Health Data Science. In my PhD work I will be trying to answer causal relationship questions in Epidemiology using methods from Data Mining and Machine Learning.
-
-I like good visualisations, tidy workflows, existent documentation, using git, and reproducible science. And I’m on the journey of getting better at all of those things.
+My background is in bioinformatics and direct-to-consumer genetics, and currently I'm interested in Health Data Science. I like good visualisations, tidy workflows, existing documentation, using git, and reproducible science. And I'm on the journey of getting better at all of those things.
 
 In this blog I intend to talk about data visualisations and workflows I create for my projects and share any (hopefully) useful insights into new methods and tricks I discover along the way. 
 
+My PhD project is focused on breast cancer epidemiology. Breast cancer is a very data-rich disease, which makes it a great case study for applying data mining methods in a disease-focused way.  I'm using [EpiGraphDB][https://epigraphdb.org/] and other biomedical data integration platforms to create a ‘holistic’ model of disease incidence and progression. The aim of this work is to find new, supporting, or disproving evidence for causal relationships and risk factors, identify potential intermediates involved in breast cancer development, and gain mechanistic insights into the complex association of cancer gene networks. 
 
 ---
 _This blog is built with [R blogdown][1] and [Hugo][2], and deployed using [Netlify][3]._ :tada:

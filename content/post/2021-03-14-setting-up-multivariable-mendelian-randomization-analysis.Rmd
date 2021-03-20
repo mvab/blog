@@ -5,7 +5,7 @@ date: '2021-03-22'
 image: /img/posts/many_doors.jpg
 slug: setting-up-multivariable-mendelian-randomization-analysis
 categories: []
-draft: no
+draft: false
 tags:
 - Rstats
 - MR

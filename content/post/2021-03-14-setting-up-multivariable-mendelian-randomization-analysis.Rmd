@@ -1,7 +1,7 @@
 ---
-title: "Setting up Multivariable Mendelian Randomization analysis"
+title: "Setting up Multivariable Mendelian Randomization analysis in R"
 author: "Marina Vabistsevits"
-date: '2021-03-23'
+date: '2021-03-22'
 image: /img/posts/many_doors.jpg
 slug: setting-up-multivariable-mendelian-randomization-analysis
 categories: []
@@ -16,22 +16,20 @@ tags:
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE) 
 knitr::opts_chunk$set(comment = NA)
 knitr::opts_chunk$set(collapse = TRUE, out.width = "100%")
 
 library(readr)
 library(vroom)
-
 library(tidyr)
 library(dplyr)
 library(tibble)
-
 library(TwoSampleMR)
 library(MVMR)
 ```
 
-There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using [**TwoSampleMR package**][1]. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base) or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, [**MVMR**][2].
+There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using [**TwoSampleMR package**][1]. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base), or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, [**MVMR**][2].
 
 In this blog post, I want to share my multivariable MR workflow. The workflow includes tidying up raw GWAS data (in my case, data from the IEU GWAS pipeline), doing the analysis first with the TwoSampleMR package, then converting the data into the format required for the MVMR package, and then repeating the analysis using it. Basically, this is the guide that I wish I had found a year ago when I first started doing MR analyses.
 
@@ -61,7 +59,7 @@ In this example, I will perform multivariable MR on Adult BMI and Early life BMI
  
 ```{r, echo=F}
 data_path <- "../data/mvmr_tutorial/"
-source(paste0(data_path, "functions_copy.R"))
+source(paste0(data_path, "functions_copy.R")) # proload all custom functions (they are also shown below)
 ```
 
 ```{r, eval = F}

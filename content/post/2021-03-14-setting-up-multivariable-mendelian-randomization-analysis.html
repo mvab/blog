@@ -1,7 +1,7 @@
 ---
-title: "Setting up Multivariable Mendelian Randomization analysis"
+title: "Setting up Multivariable Mendelian Randomization analysis in R"
 author: "Marina Vabistsevits"
-date: '2021-03-23'
+date: '2021-03-22'
 image: /img/posts/many_doors.jpg
 slug: setting-up-multivariable-mendelian-randomization-analysis
 categories: []
@@ -18,7 +18,7 @@ tags:
 <script src="/rmarkdown-libs/anchor-sections/anchor-sections.js"></script>
 
 
-<p>There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using <a href="https://github.com/MRCIEU/TwoSampleMR"><strong>TwoSampleMR package</strong></a>. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base) or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, <a href="https://github.com/WSpiller/MVMR"><strong>MVMR</strong></a>.</p>
+<p>There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using <a href="https://github.com/MRCIEU/TwoSampleMR"><strong>TwoSampleMR package</strong></a>. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base), or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, <a href="https://github.com/WSpiller/MVMR"><strong>MVMR</strong></a>.</p>
 <p>In this blog post, I want to share my multivariable MR workflow. The workflow includes tidying up raw GWAS data (in my case, data from the IEU GWAS pipeline), doing the analysis first with the TwoSampleMR package, then converting the data into the format required for the MVMR package, and then repeating the analysis using it. Basically, this is the guide that I wish I had found a year ago when I first started doing MR analyses.</p>
 <p><img src="/figs/mvmr.png" width="800px" /></p>
 <p><em>Disclaimer:</em> I set up this workflow when I was working on my first ever MR project. It may not be the ultimate way to do it, but it worked well for me and I used it to reproduce the results from colleagues’ multivariable MR analyses. I’m still learning - if you know how to do it better, please share it.</p>

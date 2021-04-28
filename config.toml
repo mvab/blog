@@ -1,4 +1,4 @@
-baseurl         = "https://marinalearning.netlify.com/"
+baseurl = "/"
 theme = "hugo-casper-two"
 languageCode    = "en-UK"
 title = "Marina Learning"

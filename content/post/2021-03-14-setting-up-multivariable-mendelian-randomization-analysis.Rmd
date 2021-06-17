@@ -29,13 +29,15 @@ library(TwoSampleMR)
 library(MVMR)
 ```
 
-There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using [**TwoSampleMR package**][1]. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base), or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, [**MVMR**][2].
+There are many tutorials and examples for performing a standard univariable Mendelian Randomization (MR) analysis using [**TwoSampleMR package**][1]. However, there is limited guidance available for setting up an efficient multivariable MR. It might be especially difficult to get started if you are using local data (i.e. not from MR-Base/[OpenGWAS][6]), or need to combine local and MR-base data, and also if you are looking to do your analysis with the newer multivariable MR package, [**MVMR**][2].
 
 In this blog post, I want to share my multivariable MR workflow. The workflow includes tidying up raw GWAS data (in my case, data from the IEU GWAS pipeline), doing the analysis first with the TwoSampleMR package, then converting the data into the format required for the MVMR package, and then repeating the analysis using it. Basically, this is the guide that I wish I had found a year ago when I first started doing MR analyses.
 
 <img src="/figs/mvmr.png" width="800px" />
 
 _Disclaimer:_ I set up this workflow when I was working on my first ever MR project. It may not be the ultimate way to do it, but it worked well for me and I used it to reproduce the results from colleagues’ multivariable MR analyses. I’m still learning - if you know how to do it better, please share it.
+
+_Update (June 2021)_: Thank you Maria Sobczyk-Barad at MRC IEU for identifying the reason why TwoSampleMR and MVMR results don't match perfectly and suggesting a solution. The code has been updated to use `mv_harmonise_data` in `make_mvmr_input`.
 
 **Quick summary of what this guide will show:**
 
@@ -136,7 +138,7 @@ _If you want to use one local exposure and another one from MR-Base, see [supple
 
 ## Multivariable MR with TwoSampleMR package
 
-Multivariable MR with TwoSampleMR using MR-Base data is well-described in the original [TwoSampleMR guide][3].  Here I'll be showing how to set up the first step of analysis (i.e. extracting instrumental variables from the exposures) if your exposure data is local. _NB please see the important [<span style="color:red">note</span>](#note) about this approach later._
+Multivariable MR with TwoSampleMR using MR-Base data is well-described in the original [TwoSampleMR guide][3].  Here I'll be showing how to set up the first step of the analysis (i.e. extracting instrumental variables from the exposures) if your exposure data is local. _NB please see the important [<span style="color:red">note</span>](#note) about this approach later._
 
 I created a modified version of the original TwoSampleMR function `mv_extract_exposures()` for extracting instruments for multiple exposures: `get_mv_exposures()` uses as input the lists of tophits/full datathat we generated earlier and produces a data frame in the same format as the original `mv_extract_exposures()`. 
 
@@ -178,7 +180,7 @@ Now let's take a step back and inspect `get_mv_exposures()`:
 
 <a id="note"></a>
 
-**<span style="color:red">Please note:</span>** _at the time of writing this blog post (March 2021), I discovered that a new [function `mv_extract_exposures_local()`][4] was added to TwoSampleMR [guide][7] in February 2021 (appeared in the codebase in May 2020). It is implemented in a very similar way with using lists, as my version `get_mv_exposures()` below. Therefore, I wanted to mention here that this is not an attempt to re-engineer the new existing TwoSampleMR's function - I arrived at this solution independently when working on my first MR project in March-April 2020,  and I have a dated Gitlab copy of this work from March 2020. I still wanted to write up this work in a blog post, as some parts of it might be useful to someone. I have tested the new function and confirmed that my solution produces the same results._ _<span style="color:lightgrey">(if l_full on [line 114][8] is replaced with l_inst)</span>_
+**<span style="color:red">Please note:</span>** _at the time of writing this blog post (March 2021), I discovered that a new [function `mv_extract_exposures_local()`][4] was added to TwoSampleMR [guide][7] in February 2021 (appeared in the codebase in May 2020). It is implemented in a very similar way with using lists, as my version `get_mv_exposures()` below. Therefore, I wanted to mention here that this is not an attempt to re-engineer the new existing TwoSampleMR's function - I arrived at this solution independently when working on my first MR project in March-April 2020,  and I have a dated Gitlab copy of this work from March 2020. I still wanted to write up this work in a blog post, as some parts of it might be useful to someone. I have tested the new function and confirmed that my solution produces the same results._
 
 ```{r}
 get_mv_exposures <- function(tophits_list, full_gwas_list) {
@@ -251,14 +253,14 @@ get_mv_exposures <- function(tophits_list, full_gwas_list) {
 
 Next, we will create the input for multivariable MR analysis with the MVMR package. We can use the same `tophits_list` object and the `exposure_dat` data frame that were created as the inputs for the analysis with TwoSampleMR.
 
-The required MVMR input format is well-described in the package [vignette][5], and an example of what the data should look like is provided. However, when I was trying to create it for the first time, I found it quite challenging. So after a few attempts and some guidance, I decided to automate it and created a function `make_mvmr_input()`. This function takes the same input as used by TwoSampleMR functions and generates the data in the format required for the MVMR function. 
+The required MVMR input format is well-described in the package [vignette][5], and an example of what the data should look like is provided. However, when I was trying to create it for the first time, I found it quite challenging. So, after a few attempts and some guidance, I decided to automate it and created a function `make_mvmr_input()`. This function takes the same input as used by TwoSampleMR functions and generates the data in the format required for the MVMR function. 
 
-The function takes `tophits_list`, `exposure_dat`, `outcome.id.mrbase` (dataset id in MR-Base)- or, if you want to use local data for the outcome, use `outcome.data` argument (expects full GWAS data in `.outcome` format).
+The function takes `exposure_dat` data frame and `outcome.id.mrbase` (dataset id in MR-Base) or `outcome.data` (if you want to use local data for the outcome - expects full GWAS data in `.outcome` format).
 
 ```{r message=F, warning=F}
 # create MVMR package input
 # (the function is defined later, remember to run it first)
-mvmr_input <- make_mvmr_input(exposure_dat, tophits_list, outcome.id.mrbase= 'ieu-a-1126')
+mvmr_input <- make_mvmr_input(exposure_dat, outcome.id.mrbase= 'ieu-a-1126')
 ```
 
 The function returns `beta` and `se` values for each exposure in `mvmr_input$XGs` and same for the outcome in `mvmr_input$Y`.
@@ -273,9 +275,9 @@ Next, we will select the required columns in `mvmr_input` when calling the `form
 
 ```{r}
 # format data to be in MVMR package-compatible df
-mvmr_out <- format_mvmr(BXGs = mvmr_input$XGs %>% select(contains("beta.")),  # exposure betas
+mvmr_out <- format_mvmr(BXGs = mvmr_input$XGs %>% select(contains("beta")),  # exposure betas
                         BYG = mvmr_input$YG$beta.outcome,                     # outcome beta
-                        seBXGs = mvmr_input$XGs %>% select(contains("se.")),  # exposure SEs
+                        seBXGs = mvmr_input$XGs %>% select(contains("se")),  # exposure SEs
                         seBYG = mvmr_input$YG$se.outcome,                     # outcome SEs
                         RSID = mvmr_input$XGs$SNP)                            # SNPs
 
@@ -295,7 +297,7 @@ Tidy up the output format:
 result_mvmr <-
     mvmr_res %>% 
     tidy_mvmr_output() %>% 
-    mutate(exposure = unique(exposure_dat$exposure),
+    mutate(exposure = mvmr_input$exposures,
            outcome = 'Breast cancer') %>% 
     select(exposure, outcome, everything()) %>% 
     tidy_pvals()
@@ -306,54 +308,42 @@ Let's take look closer at what is happening in the `make_mvmr_input()` function:
 
 ```{r}
 #  function to convert 2SMR format into MVMR format
-
-make_mvmr_input <- function(exposure_dat, tophits_list, outcome.id.mrbase="", outcome.data=""){
-  # provide exposure_dat and tophits_list created in the same as for TwoSampleMR 
+make_mvmr_input <- function(exposure_dat, outcome.id.mrbase="", outcome.data=""){
+  # provide exposure_dat created in the same way as for TwoSampleMR 
   # also specify the outcome argument [only ONE!] (MR-base ID or full gwas data in .outcome format)
-  
-  # convert exposure_dat to wider format
-  exposures_joined_auto <- exposure_dat %>%
-    select(SNP, exposure, beta.exposure, se.exposure) %>% 
-    pivot_wider(names_from = exposure, values_from = c(beta.exposure, se.exposure)) 
 
-  
   # extract SNPs for both exposures from outcome dataset
   # (for the selected option mr.base or local outcome data)
   if (outcome.id.mrbase != "") {
     # if mrbase.id is provided
-    outcome_dat <- extract_outcome_data(snps = exposures_joined_auto$SNP,
+    outcome_dat <- extract_outcome_data(snps = unique(exposure_dat$SNP),
                                         outcomes = outcome.id.mrbase)
   } else if (outcome.data != ""){
     # if outcome df is provided
     outcome_dat <- outcome.data %>% filter(SNP %in% exposures_joined_auto$SNP)
   }
   
-  # harmonize datasets 
-  exposures <- bind_rows(tophits_list)
-  outcome_harmonised <- harmonise_data(exposures, outcome_dat)
+  # harmonize datasets
+  exposure_dat <- exposure_dat %>% mutate(id.exposure = exposure)
+  outcome_harmonised <- mv_harmonise_data(exposure_dat, outcome_dat)
   
   
   # Create variables for the analysis
-  # remove factors structure in SNPs, and sort by SNP (YGs and XGs must have SNPs in the same order)
-  YG <- outcome_harmonised %>% 
-    select("SNP", "beta.outcome", "se.outcome") %>%
-    distinct() %>%
-    mutate(SNP = as.character(SNP)) %>%
-    arrange((SNP)) 
-  
-  XGs <- exposures_joined_auto %>% 
-    filter(SNP %in% outcome_harmonised$SNP) %>%
-    mutate(SNP = as.character(SNP)) %>%
-    arrange((SNP)) 
-  
-  # some checks
-  stopifnot(dim(XGs)[1]==dim(YG)[1])
-  unique(YG$SNP %in% XGs$SNP)
-  unique(XGs$SNP %in% YG$SNP)
-  all.equal(YG$SNP, XGs$SNP)
+  XGs <- data.frame(betaX1 = outcome_harmonised$exposure_beta[,1],
+                    betaX2 = outcome_harmonised$exposure_beta[,2],
+                    seX1 = outcome_harmonised$exposure_se[,1],
+                    seX2 = outcome_harmonised$exposure_se[,2]) %>% 
+        rownames_to_column('SNP')
 
+  YG <- data.frame(beta.outcome = outcome_harmonised$outcome_beta,
+                   se.outcome = outcome_harmonised$outcome_se) %>% 
+        rownames_to_column('SNP')
+  
+  exposures_order <- colnames(outcome_harmonised$exposure_beta)
+  
   return(list(YG = YG,
-              XGs = XGs))
+              XGs = XGs,
+              exposures = exposures_order))
 }
 ```
 

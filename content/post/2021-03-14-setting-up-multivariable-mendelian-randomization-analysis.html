@@ -136,7 +136,7 @@ result_2smr &lt;- res_bmis$result %&gt;%
 
 result_2smr
    exposure       outcome nsnp     b   se    pval lo_ci up_ci   or or_lci95
-1 Early BMI Breast cancer   82 -0.47 0.10 9.8e-07 -0.66 -0.28 0.62     0.52
+1 Early BMI Breast cancer   82 -0.47 0.10 1.0e-06 -0.66 -0.28 0.62     0.52
 2 Adult BMI Breast cancer  129  0.08 0.09 3.9e-01 -0.10  0.26 1.08     0.90
   or_uci95
 1     0.75
@@ -227,9 +227,9 @@ $ seX2   &lt;dbl&gt; 0.00206879, 0.00207208, 0.00194207, 0.00224989, 0.00193431,
 glimpse(mvmr_input$Y)
 Rows: 187
 Columns: 3
-$ SNP          &lt;chr&gt; &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;, &quot;10&quot;, &quot;11&quot;,…
 $ beta.outcome &lt;dbl&gt; -0.0114, 0.0045, 0.0152, -0.0010, -0.0100, 0.0076, 0.005…
-$ se.outcome   &lt;dbl&gt; 0.0071, 0.0068, 0.0066, 0.0074, 0.0062, 0.0075, 0.0065, …</code></pre>
+$ se.outcome   &lt;dbl&gt; 0.0071, 0.0068, 0.0066, 0.0074, 0.0062, 0.0075, 0.0065, …
+$ SNP          &lt;chr&gt; &quot;rs10050620&quot;, &quot;rs1013402&quot;, &quot;rs10404726&quot;, &quot;rs10510025&quot;, &quot;…</code></pre>
 <p>Next, we will select the required columns in <code>mvmr_input</code> when calling the <code>format_mvmr()</code> function from the MVMR package, which will further transform the data to work with the MVMR’s multivariable MR function.</p>
 <pre class="r"><code># format data to be in MVMR package-compatible df
 mvmr_out &lt;- format_mvmr(BXGs = mvmr_input$XGs %&gt;% select(contains(&quot;beta&quot;)),  # exposure betas
@@ -252,11 +252,11 @@ mvmr_res &lt;- ivw_mvmr(r_input=mvmr_out)
 
 Multivariable MR
 
-            Estimate Std. Error    t value     Pr(&gt;|t|)
-exposure1  0.0779729 0.09086391  0.8581284 3.919320e-01
-exposure2 -0.4727937 0.09655938 -4.8964031 2.119629e-06
+             Estimate Std. Error   t value     Pr(&gt;|t|)
+exposure1  0.07809082 0.09081415  0.859897 3.909588e-01
+exposure2 -0.47184441 0.09650650 -4.889250 2.188954e-06
 
-Residual standard error: 1.712 on 185 degrees of freedom</code></pre>
+Residual standard error: 1.711 on 185 degrees of freedom</code></pre>
 <p>Tidy up the output format:</p>
 <pre class="r"><code>result_mvmr &lt;-
     mvmr_res %&gt;% 
@@ -269,7 +269,7 @@ Residual standard error: 1.712 on 185 degrees of freedom</code></pre>
 result_mvmr
    exposure       outcome     b   se    pval lo_ci up_ci   or or_lci95 or_uci95
 1 Adult BMI Breast cancer  0.08 0.09 3.9e-01 -0.10  0.26 1.08     0.90     1.29
-2 Early BMI Breast cancer -0.47 0.10 2.1e-06 -0.66 -0.28 0.62     0.52     0.75</code></pre>
+2 Early BMI Breast cancer -0.47 0.10 2.2e-06 -0.66 -0.28 0.62     0.52     0.75</code></pre>
 <p>Let’s take look closer at what is happening in the <code>make_mvmr_input()</code> function:</p>
 <pre class="r"><code>#  function to convert 2SMR format into MVMR format
 make_mvmr_input &lt;- function(exposure_dat, outcome.id.mrbase=&quot;&quot;, outcome.data=&quot;&quot;){
@@ -291,19 +291,24 @@ make_mvmr_input &lt;- function(exposure_dat, outcome.id.mrbase=&quot;&quot;, out
   exposure_dat &lt;- exposure_dat %&gt;% mutate(id.exposure = exposure)
   outcome_harmonised &lt;- mv_harmonise_data(exposure_dat, outcome_dat)
   
+  exposures_order &lt;- colnames(outcome_harmonised$exposure_beta)
   
-  # Create variables for the analysis
-  XGs &lt;- data.frame(betaX1 = outcome_harmonised$exposure_beta[,1],
-                    betaX2 = outcome_harmonised$exposure_beta[,2],
-                    seX1 = outcome_harmonised$exposure_se[,1],
-                    seX2 = outcome_harmonised$exposure_se[,2]) %&gt;% 
-        rownames_to_column(&#39;SNP&#39;)
-
+  # Create variables for the analysis 
+  
+  ### works for many exposures
+  no_exp = dim(outcome_harmonised$exposure_beta)[2] # count exposures
+  # add beta/se names
+  colnames(outcome_harmonised$exposure_beta) &lt;- paste0(&quot;betaX&quot;, 1:no_exp)
+  colnames(outcome_harmonised$exposure_se) &lt;- paste0(&quot;seX&quot;, 1:no_exp)
+  
+  XGs &lt;-left_join(as.data.frame(outcome_harmonised$exposure_beta) %&gt;% rownames_to_column(&#39;SNP&#39;), 
+                 as.data.frame(outcome_harmonised$exposure_se)   %&gt;%rownames_to_column(&#39;SNP&#39;), 
+                 by = &quot;SNP&quot;)
+  
   YG &lt;- data.frame(beta.outcome = outcome_harmonised$outcome_beta,
                    se.outcome = outcome_harmonised$outcome_se) %&gt;% 
-        rownames_to_column(&#39;SNP&#39;)
-  
-  exposures_order &lt;- colnames(outcome_harmonised$exposure_beta)
+        mutate(SNP = XGs$SNP)
+
   
   return(list(YG = YG,
               XGs = XGs,
@@ -339,13 +344,13 @@ tidy_mvmr_output &lt;- function(mvmr_res) {
 <p><strong>TwoSampleMR:</strong></p>
 <pre class="r"><code>result_2smr %&gt;% select(-nsnp)
    exposure       outcome     b   se    pval lo_ci up_ci   or or_lci95 or_uci95
-1 Early BMI Breast cancer -0.47 0.10 9.8e-07 -0.66 -0.28 0.62     0.52     0.75
+1 Early BMI Breast cancer -0.47 0.10 1.0e-06 -0.66 -0.28 0.62     0.52     0.75
 2 Adult BMI Breast cancer  0.08 0.09 3.9e-01 -0.10  0.26 1.08     0.90     1.29</code></pre>
 <p><strong>MVMR:</strong></p>
 <pre class="r"><code>result_mvmr
    exposure       outcome     b   se    pval lo_ci up_ci   or or_lci95 or_uci95
 1 Adult BMI Breast cancer  0.08 0.09 3.9e-01 -0.10  0.26 1.08     0.90     1.29
-2 Early BMI Breast cancer -0.47 0.10 2.1e-06 -0.66 -0.28 0.62     0.52     0.75</code></pre>
+2 Early BMI Breast cancer -0.47 0.10 2.2e-06 -0.66 -0.28 0.62     0.52     0.75</code></pre>
 <p><img src="/post/2021-03-14-setting-up-multivariable-mendelian-randomization-analysis_files/figure-html/unnamed-chunk-23-1.png" width="90%" /></p>
 <p><br>
 <br></p>

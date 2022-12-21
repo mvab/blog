@@ -1,0 +1,624 @@
+---
+title: "Circular heatmaps of critical care bed occupancy rate in Bristol NHS Trusts, during a pre-COVID winter"
+author: "Marina Vabistsevits"
+date: "2022-12-21"
+image: /img/posts/abstract_pink_wall.jpg
+slug: circular-heatmap-critical-care-bed-occupancy-bristol
+categories: []
+draft: true
+tags:
+- Rstats
+- heatmap
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+
+<p>This blogplot is data story about critical care hospital occupancy rate in Bristol, in the winter of 2018-2019 (pre-COVID), for adults, children, and infants. It was originally submitted for a Christmas-themed data visualisation challenge at MRC-IEU programme 4 (<a href="https://github.com/MRCIEU/P4winter-viz-challenge">challenge details</a>).</p>
+<ul>
+<li><em>Dataset from NHS England</em>: <a href="https://www.england.nhs.uk/statistics/statistical-work-areas/winter-daily-sitreps/winter-daily-sitrep-2018-19-data/">Winter SitRep: Acute Time series 3 December 2018 to 3 March 2019</a></li>
+<li><em>Visualisation tools</em>: R packages <strong>circilize</strong> (<a href="https://github.com/jokergoo/circlize">https://github.com/jokergoo/circlize</a>) and <strong>ComplexHeatmap</strong> (<a href="https://www.bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">Bioconductor</a>)</li>
+</ul>
+<div id="background" class="section level3">
+<h3>Background</h3>
+<p>The dataset contains critical care bed occupancy rate in all NHS Trusts across England from December 2018 to February 2019 (pre-COVID data). In my analysis/visualisation, I focus on Bristol data only.</p>
+<p>Hospitals in Bristol are split between two NHS Trusts - <em>North Bristol NHS Trust</em> and <em>University Hospitals Bristol and Weston NHS Foundation Trust</em>, which cover the north and centre/south of the city, respectively. For context, below is the list of hospitals that belong to the two trusts [<a href="https://en.wikipedia.org/wiki/Healthcare_in_Bristol#NHS_trusts_and_hospitals">source</a>]:</p>
+<p>North Bristol NHS Trust (<strong>NBT</strong>) manages hospitals in the north of Bristol and South Gloucestershire.</p>
+<ul>
+<li>Southmead Hospital</li>
+<li>Cossham Memorial Hospital</li>
+<li>Frenchay Hospital</li>
+</ul>
+<p>University Hospitals Bristol and Weston NHS Foundation Trust (<strong>UHB</strong>) manages hospitals in the centre and south of the city, and at Weston-super-Mare.</p>
+<ul>
+<li>Bristol Royal Infirmary (BRI)</li>
+<li>Bristol Heart Institute</li>
+<li>Bristol Haematology and Oncology Centre</li>
+<li>South Bristol Community Hospital</li>
+<li>Bristol Royal Hospital for Children</li>
+<li>St. Michael’s Hospital</li>
+<li>Bristol Eye Hospital</li>
+<li>University of Bristol Dental Hospital</li>
+</ul>
+<p><br></p>
+<p><a href="#data-story"><strong>Skip to Data Story</strong></a></p>
+<p><br></p>
+</div>
+<div id="analysis" class="section level3">
+<h3>Analysis</h3>
+<p>We are going to look at critical care bed occupancy rate for adults, children (&lt;14 years), and infants (&lt;6 months) in these two Bristol-based NHS Trusts (<strong>NBT</strong> &amp; <strong>UHB</strong>), and visualise how occupancy rate changed over the winter months (especially during the holidays period! ☃️)</p>
+<p><strong>Load data</strong></p>
+<p>Reading the xls file and converting the data into the long format.</p>
+<pre class="r"><code>load_data &lt;- function(file, sheet){
+      # function to load and tidy data from a specified sheet in the xls file
+
+      # read the dat in the specified sheet
+      dat&lt;- read.xlsx(xlsxFile = file, 
+                        fillMergedCells = TRUE, colNames = FALSE, 
+                        sheet = sheet, rows = c(13:151))
+      
+      # store NHS trust names and location separately
+      nhs_labels &lt;- dat %&gt;% select(region = X1, code = X3, Name= X4)
+      nhs_labels &lt;- nhs_labels[5:nrow(nhs_labels),]
+      
+      # store main data
+      data_values &lt;- dat %&gt;% select(X4:X277)
+      
+      # vector of dates read in numerical format
+      dates_numerical &lt;- data_values[2, 2:274]
+      # vector of value types
+      colnames_vector &lt;- data_values[3, 2:274]
+      
+      # create value type+date vector
+      new_names &lt;-paste(colnames_vector, dates_numerical,sep=&#39;_&#39;)
+      
+      # keep only values + add new colnames
+      data_values_only &lt;- data_values[4:138,1:274]
+      colnames(data_values_only) &lt;- c(&quot;Name&quot;, new_names )
+      
+      # pivot data to long format; split type_date; convert date_numerical to Date; add NHS Trust labels
+      out &lt;- data_values_only %&gt;% 
+                 pivot_longer(!Name, names_to = &quot;variable&quot;, values_to = &quot;value&quot;) %&gt;% 
+                 separate(col=variable, into=c(&quot;variable&quot;, &quot;date&quot;), sep = &quot;_&quot;) %&gt;% 
+                 mutate(date = openxlsx::convertToDate(date)) %&gt;% 
+                 left_join(nhs_labels, by = &quot;Name&quot;) %&gt;% 
+                 arrange(region)
+      return(out)
+}
+
+
+dat_adult &lt;- load_data(file = filename, sheet = &quot;Adult critical care&quot;)
+#preview
+dat_adult %&gt;% head %&gt;% kable_it()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+variable
+</th>
+<th style="text-align:left;">
+date
+</th>
+<th style="text-align:left;">
+value
+</th>
+<th style="text-align:left;">
+region
+</th>
+<th style="text-align:left;">
+code
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Barking, Havering and Redbridge University Hospitals NHS Trust
+</td>
+<td style="text-align:left;">
+CC Adult Open
+</td>
+<td style="text-align:left;">
+2018-12-03
+</td>
+<td style="text-align:left;">
+52
+</td>
+<td style="text-align:left;">
+London Commissioning Region
+</td>
+<td style="text-align:left;">
+RF4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Barking, Havering and Redbridge University Hospitals NHS Trust
+</td>
+<td style="text-align:left;">
+CC Adult Occ
+</td>
+<td style="text-align:left;">
+2018-12-03
+</td>
+<td style="text-align:left;">
+43
+</td>
+<td style="text-align:left;">
+London Commissioning Region
+</td>
+<td style="text-align:left;">
+RF4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Barking, Havering and Redbridge University Hospitals NHS Trust
+</td>
+<td style="text-align:left;">
+Occupancy rate
+</td>
+<td style="text-align:left;">
+2018-12-03
+</td>
+<td style="text-align:left;">
+0.82692307692307687
+</td>
+<td style="text-align:left;">
+London Commissioning Region
+</td>
+<td style="text-align:left;">
+RF4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Barking, Havering and Redbridge University Hospitals NHS Trust
+</td>
+<td style="text-align:left;">
+CC Adult Open
+</td>
+<td style="text-align:left;">
+2018-12-04
+</td>
+<td style="text-align:left;">
+52
+</td>
+<td style="text-align:left;">
+London Commissioning Region
+</td>
+<td style="text-align:left;">
+RF4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Barking, Havering and Redbridge University Hospitals NHS Trust
+</td>
+<td style="text-align:left;">
+CC Adult Occ
+</td>
+<td style="text-align:left;">
+2018-12-04
+</td>
+<td style="text-align:left;">
+46
+</td>
+<td style="text-align:left;">
+London Commissioning Region
+</td>
+<td style="text-align:left;">
+RF4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Barking, Havering and Redbridge University Hospitals NHS Trust
+</td>
+<td style="text-align:left;">
+Occupancy rate
+</td>
+<td style="text-align:left;">
+2018-12-04
+</td>
+<td style="text-align:left;">
+0.88461538461538458
+</td>
+<td style="text-align:left;">
+London Commissioning Region
+</td>
+<td style="text-align:left;">
+RF4
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Process data</strong></p>
+<p>Subsetting the data to Bristol NHS Trusts, and extracting bed occupancy rates for all winter day in the two NHS Trusts.</p>
+<pre class="r"><code>process_data &lt;- function(data){
+      # function to subset data to Bristol/occupancy data only 
+      
+      # subset to Bristol
+      data_region &lt;- data %&gt;% 
+                mutate(value=as.numeric(value)) %&gt;% 
+                filter(grepl(&quot;Bristol&quot;, Name)) %&gt;% 
+                mutate(abbr = case_when(Name == &quot;University Hospitals Bristol NHS Foundation Trust&quot; ~ &quot;UHB&quot;,
+                                        Name == &quot;North Bristol NHS Trust&quot; ~&quot;\nNBT&quot;))
+              
+      # keep only Occupancy data
+      data_region_occ &lt;- data_region %&gt;% 
+                filter(grepl(&quot;Occupancy&quot;, variable))
+        
+      # pivot data to wide format and keep winter only
+      data_region_occ_wide &lt;- data_region_occ %&gt;% 
+                 pivot_wider(id_cols=date, names_from = abbr, values_from = value, values_fill = NA) %&gt;% 
+                 # extarct month from the date and create column with month name labels (set order with factor)
+                 mutate(month = lubridate::month(date, label=T, abbr=F)) %&gt;%
+                 filter(month %in% c(&quot;December&quot;, &quot;January&quot; , &quot;February&quot;)) %&gt;% 
+                 mutate(month = factor(month, levels = c(&quot;December&quot;, &quot;January&quot; , &quot;February&quot;))) %&gt;% 
+                 # create dat in 01-Dec format for the plot
+                 mutate(DayDate=lubridate::day(date)) %&gt;%
+                 mutate(MonthDate=month(date, label=T)) %&gt;%
+                 unite(DayMonth, c(&quot;DayDate&quot;, &quot;MonthDate&quot;), sep = &quot;-&quot;)
+        
+      # keep month labels as a separate variable - will be used in viz for sectors
+      split &lt;- data_region_occ_wide$month
+      
+      # tidy the output
+      data_region_occ_wide&lt;-
+                 data_region_occ_wide %&gt;% 
+                 column_to_rownames(&#39;DayMonth&#39;) %&gt;% 
+                 select( &quot;UHB&quot;,  &quot;\nNBT&quot;) # arrange in the order to appear on the plot
+      
+      return(list(
+        full_bristol_data = data_region,
+        wide_data = data_region_occ_wide,
+        split = split
+  ))
+}
+
+dat_adult_bristol &lt;- process_data(dat_adult)
+Warning in mask$eval_all_mutate(quo): NAs introduced by coercion
+dat_adult_bristol$wide_data %&gt;% head() %&gt;% kable_it()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+UHB
+</th>
+<th style="text-align:right;">
+NBT
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+3-Dec
+</td>
+<td style="text-align:right;">
+0.8727273
+</td>
+<td style="text-align:right;">
+0.6521739
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4-Dec
+</td>
+<td style="text-align:right;">
+0.9090909
+</td>
+<td style="text-align:right;">
+0.6739130
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5-Dec
+</td>
+<td style="text-align:right;">
+0.9636364
+</td>
+<td style="text-align:right;">
+0.7608696
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+6-Dec
+</td>
+<td style="text-align:right;">
+0.9818182
+</td>
+<td style="text-align:right;">
+0.7391304
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7-Dec
+</td>
+<td style="text-align:right;">
+0.9090909
+</td>
+<td style="text-align:right;">
+0.7826087
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8-Dec
+</td>
+<td style="text-align:right;">
+0.8181818
+</td>
+<td style="text-align:right;">
+0.8043478
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Visualise data (circular heatmap)</strong></p>
+<p>Here I define the plotting function -</p>
+<pre class="r"><code>plot_circular_heatmap &lt;- function(df,  title_prefix){
+      # function to draw a circular heatmap; inspired by - 
+      # https://jokergoo.github.io/circlize_book/book/circos-heatmap.html
+      
+      split &lt;- df$split
+      df&lt;- df$wide_data
+    
+      # create color palette green-white-red (min to max occupancy)
+      vals &lt;- c(df$`\nNBT`, df$`UHB`)
+      min &lt;- round(min(vals[!is.na(vals)]),1)
+      mid = (1+min)/2
+      col_fun1 = colorRamp2(c(min, mid ,1), c(&quot;#0F3C28&quot;, &quot;white&quot;, &quot;#A7111C&quot;))
+      
+      # build plot by layers
+      circos.clear()
+      circos.par( gap.degree = c(5,5,20), start.degree = 150) 
+      circos.heatmap(df,  col = col_fun1, track.height = 0.4, rownames.side = &quot;outside&quot;, 
+                     cluster=F, split = split, show.sector.labels = T,
+                     bg.border = &quot;grey&quot;, bg.lwd = 1, bg.lty = 1)
+      
+      circos.track(track.index = get.current.track.index(), panel.fun = function(x, y) {
+        if(CELL_META$sector.numeric.index == 1) { # the last sector
+          cn = rev(colnames(df))
+          n = length(cn)
+          circos.text(x = rep(CELL_META$cell.xlim[2]+63, n) + convert_x(1, &quot;mm&quot;),  # 63 is a magic number for moving track labels around the axis
+                      y = 1:n - 3, 
+                      labels = cn, 
+                      cex = 0.8, 
+                      adj = c(0, 1), 
+                      facing = &quot;inside&quot;)
+        }
+      }, bg.border = NA)
+      lgd = Legend(title = paste0(title_prefix,&quot;\nbed occupancy&quot;), col_fun = col_fun1)
+      grid.draw(lgd)
+
+}</code></pre>
+<p><a id="data-story"></a>
+<br></p>
+</div>
+<div id="data-story---critical-care-bed-occupancy-rate-in-bristol-nhs-trusts-during-a-pre-covid-winter" class="section level3">
+<h3>Data story - critical care bed occupancy rate in Bristol NHS Trusts, during a pre-COVID winter</h3>
+<p><br></p>
+<p><strong>Adult critical care</strong></p>
+<p>The critical care occupancy rate (percentage of the available beds taken) is presented as a colour gradient heatmap: from green (beds available) to red (occupancy close to 100%). The data for NBT and UHB is shown as two separate tracks of the heatmap, going clockwise from December to February.</p>
+<pre class="r"><code>suppressMessages(
+  plot_circular_heatmap(df=dat_adult_bristol,  &quot;Adult critical care&quot;))</code></pre>
+<p><img src="/post/2022-12-18-circular-heatmap-critical-care-bed-occupancy-bristol_files/figure-html/unnamed-chunk-5-1.png" width="100%" /></p>
+<ul>
+<li>UBH (n_beds=55) was very busy during the entire winter season (mean occupancy 93%)</li>
+<li>The only days with occupancy &lt; 80% at UHB were Christmas and Boxing Days 🎁</li>
+<li>NBT (n_beds=46) was busy too (mean occupancy 76%), but there were fewer people in the critical care in NBT over the entire holiday season (~ 20-Dec to 6-Jan) ☃️)</li>
+</ul>
+<pre class="r"><code># mean occupancy
+round(colMeans(dat_adult_bristol$wide_data),2) 
+  UHB \nNBT 
+ 0.93  0.76 </code></pre>
+<pre class="r"><code># show the total number of available beds in each NHS Trust
+dat_adult_bristol$full_bristol_data  %&gt;% 
+  select(Name, abbr, variable, open_beds = value) %&gt;% 
+  mutate(abbr = gsub(&quot;\n&quot;, &quot;&quot;, abbr)) %&gt;% 
+  filter(variable == &quot;CC Adult Open&quot;) %&gt;% 
+  count(Name, abbr, open_beds) %&gt;% filter(n&gt;2) %&gt;% select(-n)  %&gt;% kable_it()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+abbr
+</th>
+<th style="text-align:right;">
+open_beds
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+North Bristol NHS Trust
+</td>
+<td style="text-align:left;">
+NBT
+</td>
+<td style="text-align:right;">
+46
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+University Hospitals Bristol NHS Foundation Trust
+</td>
+<td style="text-align:left;">
+UHB
+</td>
+<td style="text-align:right;">
+55
+</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p><strong>Paediatric intensive care</strong></p>
+<p>Next, we look at bed occupancy rate in paediatric intensive care units, i.e. children (&lt; 14 years)</p>
+<pre class="r"><code># reusing the function defined for the adult critical care
+dat_child &lt;- load_data(file = filename,  sheet = &quot;Paediatric intensive care&quot;)
+dat_child_bristol &lt;- process_data(dat_child)
+Warning in mask$eval_all_mutate(quo): NAs introduced by coercion
+
+suppressMessages(
+  plot_circular_heatmap(df=dat_child_bristol,  &quot;Paedeatric \nintensive care&quot;))</code></pre>
+<p><img src="/post/2022-12-18-circular-heatmap-critical-care-bed-occupancy-bristol_files/figure-html/unnamed-chunk-8-1.png" width="100%" /></p>
+<ul>
+<li>Paediatric intensive care in Bristol is only available at UHB (likely at the <em>Bristol Royal Hospital for Children</em>), with mean occupancy 65%</li>
+<li>Therefore, no data is presented for NBT in the plot</li>
+<li>Bed occupancy was quite low in the paediatric intensive care between 25-Dec and 7-Jan: &lt; 50% ☃️ 🎁 🎅</li>
+</ul>
+<pre class="r"><code># mean occupancy
+round(colMeans(dat_child_bristol$wide_data),2)
+  UHB \nNBT 
+ 0.65    NA </code></pre>
+<pre class="r"><code># show the total number of available beds* in each NHS Trust
+dat_child_bristol$full_bristol_data  %&gt;% 
+  select(Name, abbr, variable, open_beds = value) %&gt;% 
+  filter(variable == &quot;Paed Int Care Open&quot;) %&gt;% 
+  mutate(abbr = gsub(&quot;\n&quot;, &quot;&quot;, abbr)) %&gt;% 
+  count(Name, abbr, open_beds) %&gt;% select(-n) %&gt;% kable_it()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+abbr
+</th>
+<th style="text-align:right;">
+open_beds
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+North Bristol NHS Trust
+</td>
+<td style="text-align:left;">
+NBT
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+University Hospitals Bristol NHS Foundation Trust
+</td>
+<td style="text-align:left;">
+UHB
+</td>
+<td style="text-align:right;">
+18
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+University Hospitals Bristol NHS Foundation Trust
+</td>
+<td style="text-align:left;">
+UHB
+</td>
+<td style="text-align:right;">
+33
+</td>
+</tr>
+</tbody>
+</table>
+<p>*- The number of beds went from 33 to 18 on the 19th of December</p>
+<p><strong>Neonatal intensive care (NICU)</strong></p>
+<p>Finally, we look at occupancy rates in neonatal intensive care units (children at &lt; 6 months)</p>
+<pre class="r"><code>dat_baby &lt;- load_data(file = filename, sheet = &quot;Neonatal intensive care &quot;)
+dat_baby_bristol &lt;- process_data(dat_baby)
+Warning in mask$eval_all_mutate(quo): NAs introduced by coercion
+suppressMessages(
+     plot_circular_heatmap(df=dat_baby_bristol,  &quot;Neonatal \nintensive care &quot;))</code></pre>
+<p><img src="/post/2022-12-18-circular-heatmap-critical-care-bed-occupancy-bristol_files/figure-html/unnamed-chunk-11-1.png" width="100%" /></p>
+<ul>
+<li>NBT and UHB have a similar number of NICU beds (30/31)</li>
+<li>NBT was busier (92% mean occupancy), with ~100% beds taken from 23-Dec to 23-Jan</li>
+<li>At UHB a smaller number of beds were occupied from 24-Dec to 5-Jan 🎁</li>
+</ul>
+<pre class="r"><code># mean occupancy
+round(colMeans(dat_baby_bristol$wide_data),2)
+  UHB \nNBT 
+ 0.87  0.92 </code></pre>
+<pre class="r"><code># show the total number of available beds in each NHS Trust
+dat_baby_bristol$full_bristol_data  %&gt;%
+  select(Name, abbr, variable, open_beds = value) %&gt;% 
+  filter(variable == &quot;Neo Int Care Open&quot;) %&gt;% 
+  mutate(abbr = gsub(&quot;\n&quot;, &quot;&quot;, abbr)) %&gt;% 
+  count(Name, abbr, open_beds) %&gt;% filter(n&gt;10) %&gt;% select(-n)  %&gt;% kable_it()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Name
+</th>
+<th style="text-align:left;">
+abbr
+</th>
+<th style="text-align:right;">
+open_beds
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+North Bristol NHS Trust
+</td>
+<td style="text-align:left;">
+NBT
+</td>
+<td style="text-align:right;">
+30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+University Hospitals Bristol NHS Foundation Trust
+</td>
+<td style="text-align:left;">
+UHB
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+</tbody>
+</table>
+<p><br>
+<br></p>
+<p><strong>Final thoughts</strong></p>
+<ul>
+<li>Critical care bed occupancy rate was high during the winter season pre-Covid</li>
+<li>High occupancy rate in neonatal intensive care may not be winter-season related</li>
+<li>Overall, there were less adults and children in critical care over the holiday season 🎅 🎅 ☃️</li>
+</ul>
+<center>
+</div>
+<div id="section" class="section level2">
+<h2><img src="https://media.tenor.com/iLT5yyoJg2oAAAAC/christmas-miracle.gif" /></h2>
+<p>All code is also available at <a href="https://github.com/mvab/winter_critical_care_bed_occupancy_NHS">https://github.com/mvab/winter_critical_care_bed_occupancy_NHS</a></p>
+</div>

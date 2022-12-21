@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 image: /img/posts/abstract_pink_wall.jpg
 slug: circular-heatmap-critical-care-bed-occupancy-bristol
 categories: []
-draft: true
+draft: false
 tags:
 - Rstats
 - heatmap

@@ -1,7 +1,7 @@
 ---
 title: "Circular heatmaps of critical care bed occupancy rate in Bristol NHS Trusts, during a pre-COVID winter"
 author: "Marina Vabistsevits"
-date: "`r Sys.Date()`"
+date: '2022-12-18' #"`r Sys.Date()`"
 image: /img/posts/abstract_pink_wall.jpg
 slug: circular-heatmap-critical-care-bed-occupancy-bristol
 categories: []

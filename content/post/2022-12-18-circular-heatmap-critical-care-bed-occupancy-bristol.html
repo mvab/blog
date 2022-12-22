@@ -16,14 +16,14 @@ tags:
 <link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
 
 
-<p>This blogplot is data story about critical care hospital occupancy rate in Bristol, in the winter of 2018-2019 (pre-COVID), for adults, children, and infants. It was originally submitted for a Christmas-themed data visualisation challenge at MRC-IEU programme 4 (<a href="https://github.com/MRCIEU/P4winter-viz-challenge">challenge details</a>).</p>
+<p>This blogpost is a data story about critical care hospital occupancy rate in Bristol, in the winter of 2018-2019 (pre-COVID), for adults, children, and infants. It was originally submitted for a Christmas-themed data visualisation challenge at MRC-IEU programme 4 (<a href="https://github.com/MRCIEU/P4winter-viz-challenge">challenge details</a>).</p>
 <ul>
 <li><em>Dataset from NHS England</em>: <a href="https://www.england.nhs.uk/statistics/statistical-work-areas/winter-daily-sitreps/winter-daily-sitrep-2018-19-data/">Winter SitRep: Acute Time series 3 December 2018 to 3 March 2019</a></li>
 <li><em>Visualisation tools</em>: R packages <strong>circilize</strong> (<a href="https://github.com/jokergoo/circlize">https://github.com/jokergoo/circlize</a>) and <strong>ComplexHeatmap</strong> (<a href="https://www.bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">Bioconductor</a>)</li>
 </ul>
 <div id="background" class="section level3">
 <h3>Background</h3>
-<p>The dataset contains critical care bed occupancy rate in all NHS Trusts across England from December 2018 to February 2019 (pre-COVID data). In my analysis/visualisation, I focus on Bristol data only.</p>
+<p>The dataset contains critical care bed occupancy rates in all NHS Trusts across England from December 2018 to February 2019 (pre-COVID data). In my analysis/visualisation, I focus on Bristol data only.</p>
 <p>Hospitals in Bristol are split between two NHS Trusts - <em>North Bristol NHS Trust</em> and <em>University Hospitals Bristol and Weston NHS Foundation Trust</em>, which cover the north and centre/south of the city, respectively. For context, below is the list of hospitals that belong to the two trusts [<a href="https://en.wikipedia.org/wiki/Healthcare_in_Bristol#NHS_trusts_and_hospitals">source</a>]:</p>
 <p>North Bristol NHS Trust (<strong>NBT</strong>) manages hospitals in the north of Bristol and South Gloucestershire.</p>
 <ul>
@@ -43,12 +43,12 @@ tags:
 <li>University of Bristol Dental Hospital</li>
 </ul>
 <p><br></p>
-<p><a href="#data-story"><strong>Skip to Data Story</strong></a></p>
+<p><a href="#data-story"><strong>Skip to the Data Story</strong></a></p>
 <p><br></p>
 </div>
 <div id="analysis" class="section level3">
 <h3>Analysis</h3>
-<p>We are going to look at critical care bed occupancy rate for adults, children (&lt;14 years), and infants (&lt;6 months) in these two Bristol-based NHS Trusts (<strong>NBT</strong> &amp; <strong>UHB</strong>), and visualise how occupancy rate changed over the winter months (especially during the holidays period! ☃️)</p>
+<p>We are going to look at critical care bed occupancy rate for adults, children (&lt;14 years), and infants (&lt;6 months) in these two Bristol-based NHS Trusts (<strong>NBT</strong> &amp; <strong>UHB</strong>), and visualise how occupancy rate changed over the winter months (especially during the holidays period! 🎅)</p>
 <p><strong>Load data</strong></p>
 <p>Reading the xls file and converting the data into the long format.</p>
 <pre class="r"><code>load_data &lt;- function(file, sheet){
@@ -418,7 +418,7 @@ NBT
 <p><img src="/post/2022-12-18-circular-heatmap-critical-care-bed-occupancy-bristol_files/figure-html/unnamed-chunk-5-1.png" width="100%" /></p>
 <ul>
 <li>UBH (n_beds=55) was very busy during the entire winter season (mean occupancy 93%)</li>
-<li>The only days with occupancy &lt; 80% at UHB were Christmas and Boxing Days 🎅</li>
+<li>The only days with occupancy &lt; 80% at UHB were Christmas and Boxing Days ☃️</li>
 <li>NBT (n_beds=46) was busy too (mean occupancy 76%), but there were fewer people in the critical care in NBT over the entire holiday season (~ 20-Dec to 6-Jan) ☃️)</li>
 </ul>
 <pre class="r"><code># mean occupancy
@@ -484,7 +484,7 @@ suppressMessages(
 <ul>
 <li>Paediatric intensive care in Bristol is only available at UHB (likely at the <em>Bristol Royal Hospital for Children</em>), with mean occupancy 65%</li>
 <li>Therefore, no data is presented for NBT in the plot</li>
-<li>Bed occupancy was quite low in the paediatric intensive care between 25-Dec and 7-Jan: &lt; 50% ☃️ 🎅 🎁</li>
+<li>Bed occupancy was quite low in the paediatric intensive care between 25-Dec and 7-Jan: &lt; 50% 🎁 ☃️ ☃️</li>
 </ul>
 <pre class="r"><code># mean occupancy
 round(colMeans(dat_child_bristol$wide_data),2)
@@ -558,7 +558,7 @@ suppressMessages(
 <ul>
 <li>NBT and UHB have a similar number of NICU beds (30/31)</li>
 <li>NBT was busier (92% mean occupancy), with ~100% beds taken from 23-Dec to 23-Jan</li>
-<li>At UHB a smaller number of beds were occupied from 24-Dec to 5-Jan 🎁</li>
+<li>At UHB a smaller number of beds were occupied from 24-Dec to 5-Jan ☃️</li>
 </ul>
 <pre class="r"><code># mean occupancy
 round(colMeans(dat_baby_bristol$wide_data),2)
@@ -615,7 +615,7 @@ UHB
 <ul>
 <li>Critical care bed occupancy rate was high during the winter season pre-Covid</li>
 <li>High occupancy rate in neonatal intensive care may not be winter-season related</li>
-<li>Overall, there were less adults and children in critical care over the holiday season ☃️ 🎁 🎁</li>
+<li>Overall, there were less adults and children in critical care over the holiday season 🎁 🎅 🎁</li>
 </ul>
 <center>
 </div>

@@ -12,7 +12,7 @@ tags:
 - heatmap
 ---
 
-This blogplot is data story about critical care hospital occupancy rate in Bristol, in the winter of 2018-2019 (pre-COVID), for adults, children, and infants. It was originally submitted for a Christmas-themed data visualisation challenge at MRC-IEU programme 4 ([challenge details](https://github.com/MRCIEU/P4winter-viz-challenge)). 
+This blogpost is a data story about critical care hospital occupancy rate in Bristol, in the winter of 2018-2019 (pre-COVID), for adults, children, and infants. It was originally submitted for a Christmas-themed data visualisation challenge at MRC-IEU programme 4 ([challenge details](https://github.com/MRCIEU/P4winter-viz-challenge)). 
 
   * _Dataset from NHS England_: [Winter SitRep: Acute Time series 3 December 2018 to 3 March 2019](https://www.england.nhs.uk/statistics/statistical-work-areas/winter-daily-sitreps/winter-daily-sitrep-2018-19-data/)
   * _Visualisation tools_: R packages **circilize** ([https://github.com/jokergoo/circlize](https://github.com/jokergoo/circlize)) and **ComplexHeatmap** ([Bioconductor](https://www.bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html))
@@ -20,7 +20,7 @@ This blogplot is data story about critical care hospital occupancy rate in Brist
 
 ### Background
 
-The dataset contains critical care bed occupancy rate in all NHS Trusts across England from December 2018 to February 2019 (pre-COVID data). In my analysis/visualisation, I focus on Bristol data only.
+The dataset contains critical care bed occupancy rates in all NHS Trusts across England from December 2018 to February 2019 (pre-COVID data). In my analysis/visualisation, I focus on Bristol data only.
 
 Hospitals in Bristol are split between two NHS Trusts - _North Bristol NHS Trust_ and _University Hospitals Bristol and Weston NHS Foundation Trust_, which cover the north and centre/south of the city, respectively. For context, below is the list of hospitals that belong to the two trusts [[source](https://en.wikipedia.org/wiki/Healthcare_in_Bristol#NHS_trusts_and_hospitals)]:
 
@@ -45,7 +45,7 @@ University Hospitals Bristol and Weston NHS Foundation Trust (**UHB**) manages h
 
  <br>
 
- [**Skip to Data Story**](#data-story)
+ [**Skip to the Data Story**](#data-story)
  
  <br>
 

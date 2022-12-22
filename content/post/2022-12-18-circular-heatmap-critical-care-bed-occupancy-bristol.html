@@ -2,7 +2,7 @@
 title: "Circular heatmaps of critical care bed occupancy rate in Bristol NHS Trusts, during a pre-COVID winter"
 author: "Marina Vabistsevits"
 date: '2022-12-18' #"2022-12-22"
-image: /img/posts/abstract_pink_wall.jpg
+image: https://marinalearning.netlify.app/img/posts/abstract_pink_wall.jpg 
 twitterImg: https://marinalearning.netlify.app/img/posts/abstract_pink_wall.jpg # must be full path?
 slug: circular-heatmap-critical-care-bed-occupancy-bristol
 categories: []
@@ -48,7 +48,7 @@ tags:
 </div>
 <div id="analysis" class="section level3">
 <h3>Analysis</h3>
-<p>We are going to look at critical care bed occupancy rate for adults, children (&lt;14 years), and infants (&lt;6 months) in these two Bristol-based NHS Trusts (<strong>NBT</strong> &amp; <strong>UHB</strong>), and visualise how occupancy rate changed over the winter months (especially during the holidays period! 🎁)</p>
+<p>We are going to look at critical care bed occupancy rate for adults, children (&lt;14 years), and infants (&lt;6 months) in these two Bristol-based NHS Trusts (<strong>NBT</strong> &amp; <strong>UHB</strong>), and visualise how occupancy rate changed over the winter months (especially during the holidays period! ☃️)</p>
 <p><strong>Load data</strong></p>
 <p>Reading the xls file and converting the data into the long format.</p>
 <pre class="r"><code>load_data &lt;- function(file, sheet){
@@ -484,7 +484,7 @@ suppressMessages(
 <ul>
 <li>Paediatric intensive care in Bristol is only available at UHB (likely at the <em>Bristol Royal Hospital for Children</em>), with mean occupancy 65%</li>
 <li>Therefore, no data is presented for NBT in the plot</li>
-<li>Bed occupancy was quite low in the paediatric intensive care between 25-Dec and 7-Jan: &lt; 50% 🎅 ☃️ 🎅</li>
+<li>Bed occupancy was quite low in the paediatric intensive care between 25-Dec and 7-Jan: &lt; 50% ☃️ 🎅 🎁</li>
 </ul>
 <pre class="r"><code># mean occupancy
 round(colMeans(dat_child_bristol$wide_data),2)
@@ -558,7 +558,7 @@ suppressMessages(
 <ul>
 <li>NBT and UHB have a similar number of NICU beds (30/31)</li>
 <li>NBT was busier (92% mean occupancy), with ~100% beds taken from 23-Dec to 23-Jan</li>
-<li>At UHB a smaller number of beds were occupied from 24-Dec to 5-Jan ☃️</li>
+<li>At UHB a smaller number of beds were occupied from 24-Dec to 5-Jan 🎁</li>
 </ul>
 <pre class="r"><code># mean occupancy
 round(colMeans(dat_baby_bristol$wide_data),2)
@@ -615,7 +615,7 @@ UHB
 <ul>
 <li>Critical care bed occupancy rate was high during the winter season pre-Covid</li>
 <li>High occupancy rate in neonatal intensive care may not be winter-season related</li>
-<li>Overall, there were less adults and children in critical care over the holiday season ☃️ 🎅 🎅</li>
+<li>Overall, there were less adults and children in critical care over the holiday season ☃️ 🎁 🎁</li>
 </ul>
 <center>
 </div>
